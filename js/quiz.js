@@ -3,10 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const isPaidUser = localStorage.getItem('isPaidUser') === 'true';
     const articleId = getQueryParam('id') || 1; // 获取文章ID，默认为1（滕王阁序）
     
-    // 免费试做题目数量
+    // 配置参数
     const freeQuestionCount = 5;
+    const paidQuestionCount = 10;
     let currentQuestionIndex = 0;
-    let questions = [];
+    let allQuestions = []; // 存储所有题目
+    let usedQuestionIndices = new Set(); // 记录已使用的题目索引
     
     // 初始化测试
     initQuiz();
@@ -15,46 +17,115 @@ document.addEventListener('DOMContentLoaded', function() {
     const paymentModal = document.getElementById('paymentModal');
     const closePaymentBtn = document.getElementById('closePayment');
     
-    closePaymentBtn.addEventListener('click', function() {
-        paymentModal.style.display = 'none';
-    });
+    if (closePaymentBtn) {
+        closePaymentBtn.addEventListener('click', function() {
+            paymentModal.style.display = 'none';
+        });
+    }
     
     // 初始化测试
     function initQuiz() {
         // 根据文章ID加载对应的问题
         if (articleId == 1) {
-            questions = generateTengwanggeQuestions();
+            allQuestions = generateTengwanggeQuestions();
         }
         // 可以添加更多文章的问题生成函数
         
-        // 如果不是付费用户，只取前5题
+        // 恢复进度（如果有）
+        const savedProgress = localStorage.getItem('quizProgress');
+        if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            currentQuestionIndex = progress.currentIndex;
+            usedQuestionIndices = new Set(progress.usedIndices);
+        }
+        
+        // 根据付费状态确定题目数量
+        let questionsToShow = allQuestions;
         if (!isPaidUser) {
-            questions = questions.slice(0, freeQuestionCount);
+            questionsToShow = allQuestions.slice(0, freeQuestionCount);
+        } else {
+            // 付费用户最多显示10题
+            questionsToShow = allQuestions.slice(0, paidQuestionCount);
         }
         
         // 更新进度显示
-        document.getElementById('total').textContent = questions.length;
+        document.getElementById('total').textContent = questionsToShow.length;
+        document.getElementById('current').textContent = currentQuestionIndex + 1;
         
-        // 显示第一题
-        showQuestion(0);
+        // 添加刷新按钮（仅付费用户）
+        if (isPaidUser) {
+            addRefreshButton();
+        }
+        
+        // 显示当前题目
+        showQuestion(currentQuestionIndex);
+    }
+    
+    // 添加刷新按钮
+    function addRefreshButton() {
+        const progressEl = document.querySelector('.progress');
+        if (!progressEl || progressEl.querySelector('.refresh-btn')) return;
+        
+        const refreshBtn = document.createElement('button');
+        refreshBtn.textContent = '🔄 换题';
+        refreshBtn.className = 'refresh-btn';
+        refreshBtn.onclick = refreshCurrentQuestion;
+        progressEl.appendChild(refreshBtn);
+    }
+    
+    // 刷新当前题目
+    function refreshCurrentQuestion() {
+        if (usedQuestionIndices.size >= allQuestions.length) {
+            alert('所有题目都已尝试过，请开始新测试！');
+            resetQuizProgress();
+            return;
+        }
+        
+        // 找一道未使用过的题目
+        let newIndex;
+        do {
+            newIndex = Math.floor(Math.random() * Math.min(allQuestions.length, paidQuestionCount));
+        } while (usedQuestionIndices.has(newIndex) && usedQuestionIndices.size < allQuestions.length);
+        
+        showQuestion(newIndex);
+    }
+    
+    // 重置测试进度
+    function resetQuizProgress() {
+        localStorage.removeItem('quizProgress');
+        currentQuestionIndex = 0;
+        usedQuestionIndices = new Set();
+        initQuiz();
     }
     
     // 显示问题
     function showQuestion(index) {
-        if (index >= questions.length) {
+        // 保存当前进度
+        currentQuestionIndex = index;
+        usedQuestionIndices.add(index);
+        saveQuizProgress();
+        
+        const questionsToShow = isPaidUser ? 
+            allQuestions.slice(0, paidQuestionCount) : 
+            allQuestions.slice(0, freeQuestionCount);
+            
+        if (index >= questionsToShow.length) {
             // 所有题目已完成
-            if (!isPaidUser && questions.length === freeQuestionCount) {
+            if (!isPaidUser && questionsToShow.length === freeQuestionCount) {
                 // 免费用户做完5题后显示支付弹窗
                 showPaymentModal();
             } else {
                 // 付费用户完成所有题目
                 alert('恭喜！您已完成所有测试！');
+                // 重置进度，以便重新开始
+                setTimeout(() => {
+                    resetQuizProgress();
+                }, 2000);
             }
             return;
         }
         
-        currentQuestionIndex = index;
-        const question = questions[index];
+        const question = questionsToShow[index];
         
         // 更新进度
         document.getElementById('current').textContent = index + 1;
@@ -88,6 +159,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             optionsEl.appendChild(optionEl);
         });
+    }
+    
+    // 保存测试进度
+    function saveQuizProgress() {
+        const progress = {
+            currentIndex: currentQuestionIndex,
+            usedIndices: Array.from(usedQuestionIndices)
+        };
+        localStorage.setItem('quizProgress', JSON.stringify(progress));
     }
     
     // 检查答案
@@ -138,18 +218,61 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 模拟支付成功（实际应用中应由支付宝回调）
         setTimeout(() => {
-            // 标记为付费用户
-            localStorage.setItem('isPaidUser', 'true');
-            alert('支付成功！已解锁全部功能！');
-            document.getElementById('paymentModal').style.display = 'none';
-            
-            // 重新加载所有题目
-            initQuiz();
+            onPaymentSuccess();
         }, 5000); // 5秒后模拟支付成功
+    }
+    
+    // 支付成功处理
+    function onPaymentSuccess() {
+        // 标记为付费用户
+        localStorage.setItem('isPaidUser', 'true');
+        alert('支付成功！已解锁全部功能！');
+        document.getElementById('paymentModal').style.display = 'none';
+        
+        // 无缝继续测试（从第6题开始）
+        currentQuestionIndex = freeQuestionCount; // 从第6题开始
+        isPaidUser = true; // 更新状态
+        
+        // 添加刷新按钮
+        addRefreshButton();
+        
+        // 更新总题数显示
+        document.getElementById('total').textContent = paidQuestionCount;
+        
+        // 显示下一题
+        showQuestion(currentQuestionIndex);
+    }
+    
+    // 智能生成错误选项
+    function generateSmartOptions(correctAnswer, fullText) {
+        // 将全文按标点分割成半句数组
+        const allSegments = fullText.split(/[，。；！？、]/).filter(segment => 
+            segment.length > 0 && segment !== correctAnswer
+        );
+        
+        // 筛选出与正确答案字数相近的半句（±2个字）
+        const correctLength = correctAnswer.length;
+        const lengthRangeSegments = allSegments.filter(segment => 
+            Math.abs(segment.length - correctLength) <= 2
+        );
+        
+        // 如果符合条件的半句不足，放宽条件
+        let candidatePool = lengthRangeSegments.length >= 2 ? lengthRangeSegments : allSegments;
+        
+        // 随机选择2个干扰项
+        const shuffled = [...candidatePool].sort(() => 0.5 - Math.random());
+        const wrongOptions = shuffled.slice(0, 2);
+        
+        // 组合选项并随机排序
+        const allOptions = [correctAnswer, ...wrongOptions];
+        return allOptions.sort(() => 0.5 - Math.random());
     }
     
     // 生成滕王阁序测试题目
     function generateTengwanggeQuestions() {
+        // 滕王阁序全文（示例，请替换为你的完整版本）
+        const fullText = "豫章故郡，洪都新府。星分翼轸，地接衡庐。襟三江而带五湖，控蛮荆而引瓯越。物华天宝，龙光射牛斗之墟；人杰地灵，徐孺下陈蕃之榻。雄州雾列，俊采星驰。台隍枕夷夏之交，宾主尽东南之美。都督阎公之雅望，棨戟遥临；宇文新州之懿范，襜帷暂驻。十旬休假，胜友如云；千里逢迎，高朋满座。腾蛟起凤，孟学士之词宗；紫电青霜，王将军之武库。家君作宰，路出名区；童子何知，躬逢胜饯。时维九月，序属三秋。潦水尽而寒潭清，烟光凝而暮山紫。俨骖騑于上路，访风景于崇阿；临帝子之长洲，得天人之旧馆。层峦耸翠，上出重霄；飞阁流丹，下临无地。鹤汀凫渚，穷岛屿之萦回；桂殿兰宫，即冈峦之体势。披绣闼，俯雕甍，山原旷其盈视，川泽纡其骇瞩。闾阎扑地，钟鸣鼎食之家；舸舰弥津，青雀黄龙之舳。云销雨霁，彩彻区明。落霞与孤鹜齐飞，秋水共长天一色。渔舟唱晚，响穷彭蠡之滨；雁阵惊寒，声断衡阳之浦。遥襟甫畅，逸兴遄飞。爽籁发而清风生，纤歌凝而白云遏。睢园绿竹，气凌彭泽之樽；邺水朱华，光照临川之笔。四美具，二难并。穷睇眄于中天，极娱游于暇日。天高地迥，觉宇宙之无穷；兴尽悲来，识盈虚之有数。望长安于日下，目吴会于云间。地势极而南溟深，天柱高而北辰远。关山难越，谁悲失路之人？萍水相逢，尽是他乡之客。怀帝阍而不见，奉宣室以何年？嗟乎！时运不齐，命途多舛。冯唐易老，李广难封。屈贾谊于长沙，非无圣主；窜梁鸿于海曲，岂乏明时？所赖君子见机，达人知命。老当益壮，宁移白首之心？穷且益坚，不坠青云之志。酌贪泉而觉爽，处涸辙以犹欢。北海虽赊，扶摇可接；东隅已逝，桑榆非晚。孟尝高洁，空余报国之情；阮籍猖狂，岂效穷途之哭！勃，三尺微命，一介书生。无路请缨，等终军之弱冠；有怀投笔，慕宗悫之长风。舍簪笏于百龄，奉晨昏于万里。非谢家之宝树，接孟氏之芳邻。他日趋庭，叨陪鲤对；今兹捧袂，喜托龙门。杨意不逢，抚凌云而自惜；钟期既遇，奏流水以何惭？呜乎！胜地不常，盛筵难再；兰亭已矣，梓泽丘墟。临别赠言，幸承恩于伟饯；登高作赋，是所望于群公。敢竭鄙怀，恭疏短引；一言均赋，四韵俱成。请洒潘江，各倾陆海云尔：滕王高阁临江渚，佩玉鸣鸾罢歌舞。画栋朝飞南浦云，珠帘暮卷西山雨。闲云潭影日悠悠，物换星移几度秋。阁中帝子今何在？槛外长江空自流。";
+        
         return [
             {
                 text: [
@@ -157,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {type: 'blank', id: 0, answer: '故郡'},
                     {type: 'text', content: '，洪都新府。'}
                 ],
-                options: ['故郡', '古城', '旧地'],
+                options: generateSmartOptions('故郡', fullText),
                 answer: '故郡'
             },
             {
@@ -166,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {type: 'blank', id: 1, answer: '地接衡庐'},
                     {type: 'text', content: '。'}
                 ],
-                options: ['地接衡庐', '地处江西', '地方广阔'],
+                options: generateSmartOptions('地接衡庐', fullText),
                 answer: '地接衡庐'
             },
             {
@@ -175,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {type: 'blank', id: 2, answer: '控蛮荆而引瓯越'},
                     {type: 'text', content: '。'}
                 ],
-                options: ['控蛮荆而引瓯越', '控南方而引北方', '控江河而引湖泊'],
+                options: generateSmartOptions('控蛮荆而引瓯越', fullText),
                 answer: '控蛮荆而引瓯越'
             },
             {
@@ -184,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     {type: 'blank', id: 3, answer: '龙光射牛斗之墟'},
                     {type: 'text', content: '；人杰地灵，徐孺下陈蕃之榻。'}
                 ],
-                options: ['龙光射牛斗之墟', '龙光照耀大地', '龙光闪耀天空'],
+                options: generateSmartOptions('龙光射牛斗之墟', fullText),
                 answer: '龙光射牛斗之墟'
             },
             {
@@ -193,10 +316,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     {type: 'blank', id: 4, answer: '俊采星驰'},
                     {type: 'text', content: '。'}
                 ],
-                options: ['俊采星驰', '英才辈出', '人才济济'],
+                options: generateSmartOptions('俊采星驰', fullText),
                 answer: '俊采星驰'
             },
-            // 可以继续添加更多题目...
+            {
+                text: [
+                    {type: 'text', content: '台隍枕夷夏之交，'},
+                    {type: 'blank', id: 5, answer: '宾主尽东南之美'},
+                    {type: 'text', content: '。'}
+                ],
+                options: generateSmartOptions('宾主尽东南之美', fullText),
+                answer: '宾主尽东南之美'
+            },
+            {
+                text: [
+                    {type: 'text', content: '都督阎公之雅望，'},
+                    {type: 'blank', id: 6, answer: '棨戟遥临'},
+                    {type: 'text', content: '；宇文新州之懿范，襜帷暂驻。'}
+                ],
+                options: generateSmartOptions('棨戟遥临', fullText),
+                answer: '棨戟遥临'
+            },
+            {
+                text: [
+                    {type: 'text', content: '十旬休假，'},
+                    {type: 'blank', id: 7, answer: '胜友如云'},
+                    {type: 'text', content: '；千里逢迎，高朋满座。'}
+                ],
+                options: generateSmartOptions('胜友如云', fullText),
+                answer: '胜友如云'
+            },
+            {
+                text: [
+                    {type: 'text', content: '腾蛟起凤，'},
+                    {type: 'blank', id: 8, answer: '孟学士之词宗'},
+                    {type: 'text', content: '；紫电青霜，王将军之武库。'}
+                ],
+                options: generateSmartOptions('孟学士之词宗', fullText),
+                answer: '孟学士之词宗'
+            },
+            {
+                text: [
+                    {type: 'text', content: '家君作宰，路出名区；'},
+                    {type: 'blank', id: 9, answer: '童子何知'},
+                    {type: 'text', content: '，躬逢胜饯。'}
+                ],
+                options: generateSmartOptions('童子何知', fullText),
+                answer: '童子何知'
+            }
         ];
     }
     
