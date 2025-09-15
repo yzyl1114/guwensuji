@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>填空测试 - 古文速记</title>
+    <meta name="description" content="测试您对《滕王阁序》的掌握程度，填写空缺的古文内容。">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 测试页特定样式 */
+        .quiz-container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .question {
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            border-bottom: 2px dashed #ccc;
+            margin: 0 5px;
+            position: relative;
+            height: 30px;
+            vertical-align: middle;
+        }
+        .blank input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            font-size: 1em;
+        }
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .option {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            background: #e0e0e0;
+        }
+        .correct {
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+        .progress {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .payment-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        #qrcode {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">古文速记</a>
+            <a href="javascript:void(0);" class="nav-link" id="restoreLicenseLink">恢复权限</a>
+        </div>
+    </nav>
+
+    <!-- 测试内容区 -->
+    <main class="quiz-container">
+        <div class="progress">进度: <span id="current">1</span>/<span id="total">5</span></div>
+        
+        <div class="question" id="question">
+            <!-- 动态生成题目 -->
+        </div>
+        
+        <div class="options" id="options">
+            <!-- 动态生成选项 -->
+        </div>
+    </main>
+
+    <!-- 支付弹窗 -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-content">
+            <h2>解锁全部功能</h2>
+            <p>支付1元即可解锁全文测试及本站所有篇章！</p>
+            <div id="qrcode">
+                <p>支付宝二维码将显示在这里</p>
+            </div>
+            <p>请使用支付宝扫描二维码完成支付</p>
+            <button id="closePayment">关闭</button>
+        </div>
+    </div>
+
+    <!-- 恢复权限弹窗 -->
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>恢复权限</h2>
+            <p>请输入您的永久授权码</p>
+            <input type="text" id="licenseKeyInput" placeholder="例如：A5b2C8D">
+            <button id="restoreLicenseBtn">恢复</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/quiz.js"></script>
+</body>
+</html>

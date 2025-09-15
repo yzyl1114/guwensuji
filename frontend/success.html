@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付成功 - 古文速记</title>
+    <meta name="description" content="支付成功，您已解锁古文速记全部功能。">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .success-container {
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .license-box {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">古文速记</a>
+            <a href="javascript:void(0);" class="nav-link" id="restoreLicenseLink">恢复权限</a>
+        </div>
+    </nav>
+
+    <!-- 成功内容区 -->
+    <main class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>支付成功！</h1>
+        <p>恭喜！全站测试功能已为您解锁。</p>
+        
+        <div class="license-box" id="licenseKey">
+            <!-- 授权码将在这里显示 -->
+        </div>
+        
+        <p>请妥善保存此授权码，它是您恢复权限的凭证。</p>
+        
+        <div class="btn-group">
+            <a href="index.html" class="cta-button">返回首页</a>
+            <a href="article.html?id=1" class="cta-button">继续学习</a>
+        </div>
+    </main>
+
+    <!-- 恢复权限弹窗 -->
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>恢复权限</h2>
+            <p>请输入您的永久授权码</p>
+            <input type="text" id="licenseKeyInput" placeholder="例如：A5b2C8D">
+            <button id="restoreLicenseBtn">恢复</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标记为付费用户
+            localStorage.setItem('isPaidUser', 'true');
+            
+            // 从URL获取授权码并显示
+            const urlParams = new URLSearchParams(window.location.search);
+            const licenseKey = urlParams.get('license');
+            
+            if (licenseKey) {
+                document.getElementById('licenseKey').textContent = licenseKey;
+            } else {
+                // 如果没有授权码，尝试从后端获取（简化版）
+                document.getElementById('licenseKey').textContent = 'A5b2C8D'; // 模拟授权码
+            }
+        });
+    </script>
+</body>
+</html>
