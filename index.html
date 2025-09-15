@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古文速记 - 景区背诵免票攻略</title>
+    <meta name="description" content="提供滕王阁序、岳阳楼记等景区免票背诵古文的带拼音全文与填空测试工具。">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">古文速记</a>
+            <a href="javascript:void(0);" class="nav-link" id="restoreLicenseLink">恢复权限</a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <h1>选择一篇古文开始背诵</h1>
+        <div class="article-grid">
+
+            <!-- 文章卡片 1 -->
+            <article class="article-card">
+                <a href="article.html?id=1">
+                    <img src="images/tengwangge.jpg" alt="滕王阁" class="article-cover">
+                    <div class="article-content">
+                        <h2>滕王阁序</h2>
+                        <p>南昌滕王阁背诵免票</p>
+                    </div>
+                </a>
+            </article>
+
+            <!-- 文章卡片 2 -->
+            <article class="article-card">
+                <a href="article.html?id=2">
+                    <img src="images/yueyanglou.jpg" alt="岳阳楼" class="article-cover">
+                    <div class="article-content">
+                        <h2>岳阳楼记</h2>
+                        <p>岳阳楼背诵免票</p>
+                    </div>
+                </a>
+            </article>
+
+            <!-- 可以继续添加更多卡片 -->
+
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>© 2023 古文速记 | <a href="privacy.html">隐私政策</a> | <a href="terms.html">用户协议</a></p>
+        <!-- 上线前请务必补充ICP备案号 -->
+        <!-- <p>ICP备案号：xxxxxx</p> -->
+    </footer>
+
+    <!-- 恢复权限弹窗 (暂时隐藏) -->
+    <div id="licenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>恢复权限</h2>
+            <p>请输入您的永久授权码</p>
+            <input type="text" id="licenseKeyInput" placeholder="例如：A5b-2C8-D">
+            <button id="restoreLicenseBtn">恢复</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>
