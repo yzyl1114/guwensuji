@@ -1,0 +1,4 @@
+backend/keys/
+*.db
+__pycache__/
+*.pyc
