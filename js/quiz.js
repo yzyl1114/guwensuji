@@ -211,16 +211,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 显示支付弹窗
-    function showPaymentModal() {
-        // 在实际应用中，这里应该请求后端生成支付订单并显示二维码
-        // 此处为模拟实现
-        document.getElementById('paymentModal').style.display = 'flex';
-        
-        // 模拟支付成功（实际应用中应由支付宝回调）
-        setTimeout(() => {
-            onPaymentSuccess();
-        }, 5000); // 5秒后模拟支付成功
-    }
+// 替换原来的 showPaymentModal 函数
+function showPaymentModal() {
+    // 显示支付弹窗
+    document.getElementById('paymentModal').style.display = 'flex';
+    
+    // 向后端请求创建订单
+    fetch('/api/create_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 跳转到支付宝支付页面
+            window.location.href = data.pay_url;
+        } else {
+            alert('创建订单失败，请重试');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('网络错误，请稍后重试');
+    });
+}
     
     // 支付成功处理
     function onPaymentSuccess() {

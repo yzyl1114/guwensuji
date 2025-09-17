@@ -1,0 +1,13 @@
+# 支付宝密钥文件
+backend/keys/
+
+# 数据库文件（可选，但建议添加）
+*.db
+*.sqlite3
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+
+# 环境变量文件
+.env

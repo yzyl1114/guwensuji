@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 # 基础路径
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -6,10 +7,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 数据库配置
 DATABASE = os.path.join(BASE_DIR, 'database.db')
 
-# 支付宝沙箱配置（测试环境）
-ALIPAY_APP_ID = '你的沙箱APP_ID'  # 需要到支付宝开放平台申请
-ALIPAY_PRIVATE_KEY = '你的应用私钥'
-ALIPAY_PUBLIC_KEY = '支付宝公钥'
-ALIPAY_GATEWAY = 'https://openapi.alipaydev.com/gateway.do'  # 沙箱环境网关
-ALIPAY_NOTIFY_URL = 'http://你的域名或IP:5000/payment/callback'  # 支付回调地址
-ALIPAY_RETURN_URL = 'http://你的域名或IP:5000/payment/success'   # 支付成功跳转地址
+# 支付宝配置 - ！！！请替换为你的实际信息！！！
+ALIPAY_CONFIG = {
+    "appid": "2021005194629232",  # 你的APPID
+    "app_notify_url": "https://guwensuji.com/api/payment/callback",  # 默认回调地址 - 添加了引号
+    "app_private_key_string": open(os.path.join(BASE_DIR, "keys/app_private_key.pem")).read(),
+    "alipay_public_key_string": open(os.path.join(BASE_DIR, "keys/alipay_public_key.pem")).read(),
+    "sign_type": "RSA2",
+    "debug": True  # 沙箱模式 True, 生产环境 False
+}
+
+# 根据调试模式选择网关
+ALIPAY_GATEWAY = "https://openapi.alipaydev.com/gateway.do" if ALIPAY_CONFIG["debug"] else "https://openapi.alipay.com/gateway.do"
+
+# 支付成功后的前端跳转地址（支付成功页）
+ALIPAY_RETURN_URL = "https://guwensuji.com/payment_success.html"
