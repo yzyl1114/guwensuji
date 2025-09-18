@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, render_template, url_for
+from flask import Flask, request, jsonify, render_template, url_for, send_from_directory
 from database import init_db, get_db_connection
 import json
 import time
@@ -21,8 +21,21 @@ root_dir = os.path.dirname(current_dir)
 
 app = Flask(__name__, 
            template_folder=root_dir,    # 模板文件夹指向根目录
-           static_folder=root_dir)      # 静态文件夹也指向根目录
+           static_folder=root_dir,      # 静态文件夹也指向根目录
+           static_url_path='')          # 设置静态文件的URL路径为空
 
+# 手动设置静态文件路由
+@app.route('/css/<path:filename>')
+def css_files(filename):
+    return send_from_directory(os.path.join(root_dir, 'css'), filename)
+
+@app.route('/js/<path:filename>')
+def js_files(filename):
+    return send_from_directory(os.path.join(root_dir, 'js'), filename)
+
+@app.route('/images/<path:filename>')
+def images_files(filename):
+    return send_from_directory(os.path.join(root_dir, 'images'), filename)
 
 # 初始化数据库
 init_db()
@@ -44,7 +57,8 @@ def index():
 
 @app.route('/article')
 def article():
-    return render_template('article.html')
+    article_id = request.args.get('id', '1')
+    return render_template('article.html', article_id=article_id)
 
 @app.route('/quiz')
 def quiz():
@@ -220,3 +234,11 @@ def check_order(out_trade_no):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('500.html'), 500
