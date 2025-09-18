@@ -136,9 +136,12 @@ def verify_license():
 def create_order():
     """创建支付宝订单"""
     try:
+        print("收到创建订单请求")
+        
         # 生成商户订单号，确保唯一性
         out_trade_no = f"ORDER{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:6]}"
-        
+        print(f"生成的订单号: {out_trade_no}")
+
         # 创建支付订单
         order_string = alipay.api_alipay_trade_wap_pay(
             out_trade_no=out_trade_no,          # 商户订单号
@@ -148,6 +151,8 @@ def create_order():
             notify_url=ALIPAY_CONFIG['app_notify_url']  # 异步通知地址
         )
         
+        print(f"生成的订单字符串: {order_string}")
+
         # 将订单信息存入数据库
         conn = get_db_connection()
         conn.execute(
@@ -159,11 +164,15 @@ def create_order():
         
         # 返回支付页面的URL
         pay_url = ALIPAY_GATEWAY + "?" + order_string
+        print(f"完整的支付URL: {pay_url}")
+        
         return jsonify({'success': True, 'pay_url': pay_url})
         
     except Exception as e:
-        print(f"创建订单失败: {str(e)}")
-        return jsonify({'success': False, 'message': '创建订单失败'})
+        print(f"创建订单异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/payment/callback', methods=['POST'])
 def payment_callback():
