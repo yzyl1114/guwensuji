@@ -123,13 +123,18 @@
         <div class="payment-content">
             <h2>解锁全部功能</h2>
             <p>支付1元即可解锁全文测试及本站所有篇章！</p>
-            <div id="qrcode">
-                <p>支付宝二维码将显示在这里</p>
-            </div>
-            <p>请使用支付宝扫描二维码完成支付</p>
-            <button id="closePayment">关闭</button>
+            
+            <!-- 添加支付按钮 -->
+            <button id="startAlipayPayment" class="alipay-button">
+                <img src="/images/alipay-logo.png" alt="支付宝" height="24">
+                使用支付宝支付 1元
+            </button>
+            
+            <p>支付完成后将自动跳回本站</p>
+            <button id="closePayment">取消</button>
         </div>
     </div>
+
 
     <!-- 恢复权限弹窗 -->
     <div id="licenseModal" class="modal">

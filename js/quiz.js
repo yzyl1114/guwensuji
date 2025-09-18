@@ -14,15 +14,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initQuiz();
     
     // 支付弹窗逻辑
-    const paymentModal = document.getElementById('paymentModal');
-    const closePaymentBtn = document.getElementById('closePayment');
-    
-    if (closePaymentBtn) {
-        closePaymentBtn.addEventListener('click', function() {
-            paymentModal.style.display = 'none';
-        });
+    // 绑定支付按钮事件
+    const startPaymentBtn = document.getElementById('startAlipayPayment');
+    if (startPaymentBtn) {
+        startPaymentBtn.addEventListener('click', showPaymentModal);
     }
     
+    // 绑定关闭按钮事件
+    const closePaymentBtn = document.getElementById('closePayment');
+    if (closePaymentBtn) {
+        closePaymentBtn.addEventListener('click', function() {
+            document.getElementById('paymentModal').style.display = 'none';
+        });
+    }
+
     // 初始化测试
     function initQuiz() {
         // 根据文章ID加载对应的问题
@@ -213,8 +218,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 显示支付弹窗
 // 替换原来的 showPaymentModal 函数
 function showPaymentModal() {
-    // 显示支付弹窗
-    document.getElementById('paymentModal').style.display = 'flex';
+    // 显示加载提示
+    alert("正在准备支付，请稍候...");
     
     // 向后端请求创建订单
     fetch('/api/create_order', {
@@ -226,14 +231,15 @@ function showPaymentModal() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 跳转到支付宝支付页面
+            // 重要：直接跳转到支付宝支付页面
+            console.log("跳转到支付页面:", data.pay_url);
             window.location.href = data.pay_url;
         } else {
-            alert('创建订单失败，请重试');
+            alert('创建订单失败: ' + (data.message || '未知错误'));
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('支付请求错误:', error);
         alert('网络错误，请稍后重试');
     });
 }
