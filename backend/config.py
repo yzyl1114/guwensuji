@@ -18,7 +18,7 @@ ALIPAY_CONFIG = {
 }
 
 # 根据调试模式选择网关
-ALIPAY_GATEWAY = "https://openapi.alipaydev.com/gateway.do" if ALIPAY_CONFIG["debug"] else "https://openapi.alipay.com/gateway.do"
+ALIPAY_GATEWAY = "https://openapi-sandbox.dl.alipaydev.com/gateway.do" if ALIPAY_CONFIG["debug"] else "https://openapi.alipay.com/gateway.do"
 
 # 支付成功后的前端跳转地址（支付成功页）
 ALIPAY_RETURN_URL = "https://e72619ebc980.ngrok-free.app/payment_success.html"
