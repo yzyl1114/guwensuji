@@ -9,12 +9,12 @@ DATABASE = os.path.join(BASE_DIR, 'database.db')
 
 # 支付宝配置 - ！！！请替换为你的实际信息！！！
 ALIPAY_CONFIG = {
-    "appid": "2021005193671597",  # 你的APPID
+    "appid": "9021000154626455",  # 你的APPID
     "app_notify_url": "https://guwensuji.com/api/payment/callback",  # 默认回调地址 - 添加了引号
     "app_private_key_string": open(os.path.join(BASE_DIR, "keys/app_private_key.pem")).read(),
     "alipay_public_key_string": open(os.path.join(BASE_DIR, "keys/alipay_public_key.pem")).read(),
     "sign_type": "RSA2",
-    "debug": False  # 沙箱模式 True, 生产环境 False
+    "debug": True  # 沙箱模式 True, 生产环境 False
 }
 
 # 根据调试模式选择网关
