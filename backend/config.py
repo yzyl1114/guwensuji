@@ -10,7 +10,7 @@ DATABASE = os.path.join(BASE_DIR, 'database.db')
 # 支付宝配置 - ！！！请替换为你的实际信息！！！
 ALIPAY_CONFIG = {
     "appid": "9021000154626455",  # 你的APPID
-    "app_notify_url": "https://e72619ebc980.ngrok-free.app/payment/callback",  # 默认回调地址 - 添加了引号
+    "app_notify_url": "https://702953f9c20c.ngrok-free.app/payment/callback",  # 默认回调地址 - 添加了引号
     "app_private_key_string": open(os.path.join(BASE_DIR, "keys/app_private_key.pem")).read(),
     "alipay_public_key_string": open(os.path.join(BASE_DIR, "keys/alipay_public_key.pem")).read(),
     "sign_type": "RSA2",
@@ -21,4 +21,4 @@ ALIPAY_CONFIG = {
 ALIPAY_GATEWAY = "https://openapi-sandbox.dl.alipaydev.com/gateway.do" if ALIPAY_CONFIG["debug"] else "https://openapi.alipay.com/gateway.do"
 
 # 支付成功后的前端跳转地址（支付成功页）
-ALIPAY_RETURN_URL = "https://e72619ebc980.ngrok-free.app/payment_success.html"
+ALIPAY_RETURN_URL = "https://702953f9c20c.ngrok-free.app/payment_success.html"
