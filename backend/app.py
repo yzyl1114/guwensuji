@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template, url_for
 from database import init_db, get_db_connection
 import json
@@ -13,7 +14,15 @@ from config import ALIPAY_CONFIG, ALIPAY_GATEWAY, ALIPAY_RETURN_URL
 from alipay import AliPay
 from alipay.utils import AliPayConfig
 
-app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
+# 获取当前文件的绝对路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 获取项目根目录的绝对路径（backend 的父目录）
+root_dir = os.path.dirname(current_dir)
+
+app = Flask(__name__, 
+           template_folder=root_dir,    # 模板文件夹指向根目录
+           static_folder=root_dir)      # 静态文件夹也指向根目录
+
 
 # 初始化数据库
 init_db()
