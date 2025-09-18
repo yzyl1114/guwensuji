@@ -145,7 +145,7 @@ def create_order():
             total_amount="1.00",                # 支付金额（单位：元）
             subject="古文速记 - 永久会员",       # 订单标题
             return_url=ALIPAY_RETURN_URL,       # 前端跳转地址
-            notify_url=url_for('payment_callback', _external=True)  # 异步通知地址
+            notify_url=ALIPAY_CONFIG['app_notify_url']  # 异步通知地址
         )
         
         # 将订单信息存入数据库
