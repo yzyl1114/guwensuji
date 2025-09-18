@@ -14,6 +14,7 @@ ALIPAY_CONFIG = {
     "app_private_key_string": open(os.path.join(BASE_DIR, "keys/app_private_key.pem")).read(),
     "alipay_public_key_string": open(os.path.join(BASE_DIR, "keys/alipay_public_key.pem")).read(),
     "sign_type": "RSA2",
+    "encrypt_key": "3w9/Z30TLyziXvNHwfQYjA==",
     "debug": True  # 沙箱模式 True, 生产环境 False
 }
 
