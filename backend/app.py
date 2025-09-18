@@ -47,7 +47,6 @@ alipay = AliPay(
     app_private_key_string=ALIPAY_CONFIG['app_private_key_string'],
     alipay_public_key_string=ALIPAY_CONFIG['alipay_public_key_string'],
     sign_type=ALIPAY_CONFIG['sign_type'],
-    encrypt_key=ALIPAY_CONFIG.get('encrypt_key'),  # 添加加密密钥
     debug=ALIPAY_CONFIG['debug'],
     config=AliPayConfig(timeout=15)  # 超时时间
 )
