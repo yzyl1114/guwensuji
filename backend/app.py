@@ -66,7 +66,35 @@ def quiz():
 
 @app.route('/payment/success')
 def payment_success():
-    return render_template('payment_success.html')
+    # 从URL参数中获取支付宝返回的数据
+    out_trade_no = request.args.get('out_trade_no')
+    trade_no = request.args.get('trade_no')
+    total_amount = request.args.get('total_amount')
+    
+    print(f"支付成功回调参数: out_trade_no={out_trade_no}, trade_no={trade_no}, total_amount={total_amount}")
+    
+    # 检查签名确保回调的合法性（可选但推荐）
+    # 这里可以添加签名验证逻辑
+    
+    # 更新数据库订单状态为支付成功
+    if out_trade_no:
+        try:
+            conn = get_db_connection()
+            conn.execute(
+                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
+                ('TRADE_SUCCESS', trade_no, out_trade_no)
+            )
+            conn.commit()
+            conn.close()
+            print(f"订单 {out_trade_no} 状态已更新为成功")
+        except Exception as e:
+            print(f"更新订单状态失败: {str(e)}")
+    
+    # 将参数传递给模板，以便显示
+    return render_template('payment_success.html', 
+                           out_trade_no=out_trade_no,
+                           trade_no=trade_no,
+                           total_amount=total_amount)
 
 @app.route('/api/generate_license', methods=['POST'])
 def generate_license():

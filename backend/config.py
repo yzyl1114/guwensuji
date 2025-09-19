@@ -21,4 +21,4 @@ ALIPAY_CONFIG = {
 ALIPAY_GATEWAY = "https://openapi-sandbox.dl.alipaydev.com/gateway.do" if ALIPAY_CONFIG["debug"] else "https://openapi.alipay.com/gateway.do"
 
 # 支付成功后的前端跳转地址（支付成功页）
-ALIPAY_RETURN_URL = "https://702953f9c20c.ngrok-free.app/payment_success.html"
+ALIPAY_RETURN_URL = "https://702953f9c20c.ngrok-free.app/payment/success"
