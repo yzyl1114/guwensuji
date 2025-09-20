@@ -7,17 +7,7 @@ def init_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
-    # 创建授权码表
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS licenses (
-            license_key TEXT PRIMARY KEY,
-            device_fp_1 TEXT,
-            device_fp_2 TEXT,
-            bound_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # 创建订单表（用于记录支付）
+    # 创建订单表
     c.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,6 +16,19 @@ def init_db():
             total_amount REAL,
             trade_status TEXT,
             create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # 创建授权码表（修改后的结构）
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS licenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            license_key TEXT UNIQUE,
+            order_id INTEGER,
+            device_fp_1 TEXT,
+            device_fp_2 TEXT,
+            bound_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES orders (id)
         )
     ''')
     

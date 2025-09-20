@@ -114,6 +114,55 @@ def generate_license():
     
     return jsonify({'license_key': license_key})
 
+@app.route('/api/get_license')
+def get_license():
+    """根据订单号获取授权码"""
+    out_trade_no = request.args.get('out_trade_no')
+    
+    if not out_trade_no:
+        return jsonify({'success': False, 'message': '缺少订单号参数'})
+    
+    conn = get_db_connection()
+    
+    # 检查订单是否存在且已支付
+    order = conn.execute(
+        'SELECT * FROM orders WHERE out_trade_no = ? AND trade_status = ?',
+        (out_trade_no, 'TRADE_SUCCESS')
+    ).fetchone()
+    
+    if not order:
+        conn.close()
+        return jsonify({'success': False, 'message': '订单不存在或未支付'})
+    
+    # 检查是否已有授权码
+    license_data = conn.execute(
+        'SELECT * FROM licenses WHERE order_id = ?',
+        (order['id'],)
+    ).fetchone()
+    
+    if license_data:
+        # 如果已有授权码，直接返回
+        conn.close()
+        return jsonify({'success': True, 'license_key': license_data['license_key']})
+    
+    # 生成新的授权码
+    import random
+    import string
+    
+    chars = string.ascii_letters + string.digits
+    license_key = ''.join(random.choice(chars) for _ in range(7))
+    
+    # 保存授权码到数据库，关联订单
+    conn.execute(
+        'INSERT INTO licenses (license_key, order_id) VALUES (?, ?)',
+        (license_key, order['id'])
+    )
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'license_key': license_key})
+
 @app.route('/api/verify_license', methods=['POST'])
 def verify_license():
     """验证授权码"""
@@ -226,17 +275,24 @@ def payment_callback():
                 ('TRADE_SUCCESS', data.get('trade_no'), out_trade_no)
             )
             
-            # 生成授权码并关联到订单
-            import random
-            import string
-            chars = string.digits + string.ascii_letters
-            license_key = ''.join(random.choice(chars) for _ in range(7))
+            # 获取订单ID
+            order = conn.execute(
+                'SELECT id FROM orders WHERE out_trade_no = ?',
+                (out_trade_no,)
+            ).fetchone()
             
-            # 保存授权码到数据库
-            conn.execute('INSERT OR IGNORE INTO licenses (license_key) VALUES (?)', (license_key,))
-            
-            # 可以将授权码与订单关联（如果需要）
-            # conn.execute('UPDATE orders SET license_key = ? WHERE out_trade_no = ?', (license_key, out_trade_no))
+            if order:
+                # 生成授权码并关联到订单
+                import random
+                import string
+                chars = string.digits + string.ascii_letters
+                license_key = ''.join(random.choice(chars) for _ in range(7))
+                
+                # 保存授权码到数据库，并关联订单ID
+                conn.execute(
+                    'INSERT INTO licenses (license_key, order_id) VALUES (?, ?)',
+                    (license_key, order['id'])
+                )
             
             conn.commit()
             conn.close()
@@ -269,9 +325,6 @@ def check_order(out_trade_no):
     else:
         return jsonify({'success': False, 'message': '订单不存在'})
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
-
 @app.route('/api/gateway', methods=['POST'])
 def app_gateway():
     # 处理支付宝开放平台的各种通知
@@ -285,3 +338,6 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('500.html'), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5001)
