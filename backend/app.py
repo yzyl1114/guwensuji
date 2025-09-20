@@ -122,54 +122,94 @@ def get_license():
     print(f"获取授权码请求，订单号: {out_trade_no}")
 
     if not out_trade_no:
-        return jsonify({'success': False, 'message': '缺少订单号参数'})
+        return jsonify({'success': False, 'message': '缺少订单号参数'}), 400
     
-    conn = get_db_connection()
-    
-    # 检查订单是否存在且已支付
-    order = conn.execute(
-        'SELECT * FROM orders WHERE out_trade_no = ? AND trade_status = ?',
-        (out_trade_no, 'TRADE_SUCCESS')
-    ).fetchone()
-    
-    if not order:
-        print(f"错误: 订单不存在或未支付 - {out_trade_no}")
-        conn.close()
-        return jsonify({'success': False, 'message': '订单不存在或未支付'})
-    
-    print(f"找到订单: {order['id']}")
+    try:
+        conn = get_db_connection()
+        conn.row_factory = sqlite3.Row
+        
+        # 检查订单是否存在且已支付
+        order = conn.execute(
+            'SELECT * FROM orders WHERE out_trade_no = ? AND trade_status = ?',
+            (out_trade_no, 'TRADE_SUCCESS')
+        ).fetchone()
+        
+        if not order:
+            print(f"错误: 订单不存在或未支付 - {out_trade_no}")
+            conn.close()
+            return jsonify({'success': False, 'message': '订单不存在或未支付'}), 404
+        
+        print(f"找到订单: {order['id']}")
 
-    # 检查是否已有授权码
-    license_data = conn.execute(
-        'SELECT * FROM licenses WHERE order_id = ?',
-        (order['id'],)
-    ).fetchone()
-    
-    if license_data:
-        # 如果已有授权码，直接返回
-        print(f"找到现有授权码: {license_data['license_key']}")
-        conn.close()
-        return jsonify({'success': True, 'license_key': license_data['license_key']})
-    
-    # 生成新的授权码
-    import random
-    import string
-    
-    chars = string.ascii_letters + string.digits
-    license_key = ''.join(random.choice(chars) for _ in range(7))
-    
-    print(f"生成新授权码: {license_key}")
+        # 检查是否已有授权码
+        license_data = conn.execute(
+            'SELECT * FROM licenses WHERE order_id = ?',
+            (order['id'],)
+        ).fetchone()
+        
+        if license_data:
+            # 如果已有授权码，直接返回
+            print(f"找到现有授权码: {license_data['license_key']}")
+            conn.close()
+            return jsonify({
+                'success': True, 
+                'license_key': license_data['license_key'],
+                'expires_at': license_data.get('expires_at', '')
+            })
+        
+        # 生成新的授权码
+        import random
+        import string
+        from datetime import datetime, timedelta
+        
+        chars = string.ascii_uppercase + string.digits
+        license_key = '-'.join(
+            [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
+        )
+        
+        # 设置过期时间（例如一年后）
+        expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
+        
+        print(f"生成新授权码: {license_key}, 过期时间: {expires_at}")
 
-    # 保存授权码到数据库，关联订单
-    conn.execute(
-        'INSERT INTO licenses (license_key, order_id) VALUES (?, ?)',
-        (license_key, order['id'])
-    )
+        # 保存授权码到数据库，关联订单
+        conn.execute(
+            'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
+            (license_key, order['id'], expires_at)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'license_key': license_key,
+            'expires_at': expires_at
+        })
     
-    conn.commit()
-    conn.close()
+    except sqlite3.OperationalError as e:
+        print(f"数据库操作错误: {str(e)}")
+        if "no such column: order_id" in str(e):
+            # 如果order_id列不存在，需要更新数据库结构
+            return jsonify({
+                'success': False, 
+                'message': '系统维护中，请稍后再试',
+                'error_code': 'DB_SCHEMA_ERROR'
+            }), 500
+        else:
+            return jsonify({
+                'success': False, 
+                'message': '数据库错误',
+                'error_code': 'DB_ERROR'
+            }), 500
     
-    return jsonify({'success': True, 'license_key': license_key})
+    except Exception as e:
+        print(f"获取授权码时发生未知错误: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': '系统错误，请稍后再试',
+            'error_code': 'UNKNOWN_ERROR'
+        }), 500
 
 @app.route('/api/verify_license', methods=['POST'])
 def verify_license():
@@ -263,55 +303,110 @@ def create_order():
 def payment_callback():
     """支付宝异步通知回调（重要！）"""
     try:
+        # 记录回调请求
+        print(f"支付回调参数: {dict(request.form)}")
+        
         # 验证签名
         data = request.form.to_dict()
         signature = data.pop("sign", None)
         success = alipay.verify(data, signature)
         
         if not success:
+            print("支付回调签名验证失败")
             return 'failure', 400  # 签名验证失败
             
         # 处理业务逻辑
         out_trade_no = data.get('out_trade_no')
         trade_status = data.get('trade_status')
+        trade_no = data.get('trade_no')
         
-        if trade_status == 'TRADE_SUCCESS':
-            # 更新订单状态
-            conn = get_db_connection()
-            conn.execute(
-                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
-                ('TRADE_SUCCESS', data.get('trade_no'), out_trade_no)
-            )
-            
-            # 获取订单ID
-            order = conn.execute(
-                'SELECT id FROM orders WHERE out_trade_no = ?',
+        if trade_status != 'TRADE_SUCCESS':
+            print(f"交易未成功，状态: {trade_status}")
+            return 'success'  # 非成功状态也返回success，避免支付宝重复通知
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        conn.row_factory = sqlite3.Row
+        
+        try:
+            # 检查订单是否已处理过
+            existing_order = conn.execute(
+                'SELECT id, trade_status FROM orders WHERE out_trade_no = ?',
                 (out_trade_no,)
             ).fetchone()
             
-            if order:
-                # 生成授权码并关联到订单
-                import random
-                import string
-                chars = string.digits + string.ascii_letters
-                license_key = ''.join(random.choice(chars) for _ in range(7))
-                
-                # 保存授权码到数据库，并关联订单ID
-                conn.execute(
-                    'INSERT INTO licenses (license_key, order_id) VALUES (?, ?)',
-                    (license_key, order['id'])
-                )
+            if not existing_order:
+                print(f"订单不存在: {out_trade_no}")
+                conn.close()
+                return 'success'  # 订单不存在也返回success
+            
+            # 如果订单已经成功处理，直接返回成功
+            if existing_order['trade_status'] == 'TRADE_SUCCESS':
+                print(f"订单已处理过: {out_trade_no}")
+                conn.close()
+                return 'success'
+            
+            # 更新订单状态
+            conn.execute(
+                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
+                ('TRADE_SUCCESS', trade_no, out_trade_no)
+            )
+            
+            print(f"订单 {out_trade_no} 状态已更新为成功")
+            
+            # 检查是否已存在授权码
+            existing_license = conn.execute(
+                'SELECT id FROM licenses WHERE order_id = ?',
+                (existing_order['id'],)
+            ).fetchone()
+            
+            if existing_license:
+                print(f"订单已有授权码，跳过生成: {out_trade_no}")
+                conn.commit()
+                conn.close()
+                return 'success'
+            
+            # 生成授权码并关联到订单
+            import random
+            import string
+            from datetime import datetime, timedelta
+            
+            # 生成更规范的授权码格式
+            chars = string.ascii_uppercase + string.digits
+            license_key = '-'.join(
+                [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
+            )
+            
+            # 设置过期时间（一年后）
+            expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
+            
+            # 保存授权码到数据库，并关联订单ID
+            conn.execute(
+                'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
+                (license_key, existing_order['id'], expires_at)
+            )
+            
+            print(f"为订单 {out_trade_no} 生成新授权码: {license_key}")
             
             conn.commit()
             conn.close()
             
             # 这里可以添加更多业务逻辑，如发送邮件、短信通知等
+            print(f"支付回调处理完成: {out_trade_no}")
             
-        return 'success'  # 必须返回success，否则支付宝会重复通知
-        
+            return 'success'  # 必须返回success，否则支付宝会重复通知
+            
+        except sqlite3.Error as e:
+            conn.rollback()
+            conn.close()
+            print(f"数据库操作失败: {str(e)}")
+            # 即使数据库操作失败，也返回success，避免支付宝重复通知
+            return 'success'
+            
     except Exception as e:
-        print(f"处理支付回调失败: {str(e)}")
-        return 'failure', 500
+        print(f"处理支付回调异常: {str(e)}")
+        # 即使出现异常，也返回success，避免支付宝重复通知
+        return 'success'
 
 # 添加一个查询订单状态的接口（可选，用于前端轮询）
 @app.route('/api/check_order/<out_trade_no>', methods=['GET'])
