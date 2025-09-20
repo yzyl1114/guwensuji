@@ -85,13 +85,17 @@
             // 如果有订单号，尝试从后端获取真实的授权码
             if (outTradeNo) {
                 fetch('/api/get_license?out_trade_no=' + encodeURIComponent(outTradeNo))
-                    .then(response => response.json())
+                    .then(response => {
+                        console.log("响应状态:", response.status);
+                        return response.json();
+                    })   
                     .then(data => {
+                    console.log("响应数据:", data);    
                         if (data.success && data.license_key) {
                             document.getElementById('licenseKey').textContent = data.license_key;
                         } else {
                             // 如果获取失败，显示模拟授权码
-                            document.getElementById('licenseKey').textContent = '获取失败，请联系客服';
+                            document.getElementById('licenseKey').textContent = '获取失败:'+ (data.message || '未知错误');
                         }
                     })
                     .catch(error => {

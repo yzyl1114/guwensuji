@@ -119,6 +119,8 @@ def get_license():
     """根据订单号获取授权码"""
     out_trade_no = request.args.get('out_trade_no')
     
+    print(f"获取授权码请求，订单号: {out_trade_no}")
+
     if not out_trade_no:
         return jsonify({'success': False, 'message': '缺少订单号参数'})
     
@@ -131,9 +133,12 @@ def get_license():
     ).fetchone()
     
     if not order:
+        print(f"错误: 订单不存在或未支付 - {out_trade_no}")
         conn.close()
         return jsonify({'success': False, 'message': '订单不存在或未支付'})
     
+    print(f"找到订单: {order['id']}")
+
     # 检查是否已有授权码
     license_data = conn.execute(
         'SELECT * FROM licenses WHERE order_id = ?',
@@ -142,6 +147,7 @@ def get_license():
     
     if license_data:
         # 如果已有授权码，直接返回
+        print(f"找到现有授权码: {license_data['license_key']}")
         conn.close()
         return jsonify({'success': True, 'license_key': license_data['license_key']})
     
@@ -152,6 +158,8 @@ def get_license():
     chars = string.ascii_letters + string.digits
     license_key = ''.join(random.choice(chars) for _ in range(7))
     
+    print(f"生成新授权码: {license_key}")
+
     # 保存授权码到数据库，关联订单
     conn.execute(
         'INSERT INTO licenses (license_key, order_id) VALUES (?, ?)',
