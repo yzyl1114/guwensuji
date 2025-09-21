@@ -1,4 +1,9 @@
+import sys
 import os
+# 添加当前目录到 Python 路径，确保可以导入本地模块
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+import sqlite3
 from flask import Flask, request, jsonify, render_template, url_for, send_from_directory
 from database import init_db, get_db_connection
 import json

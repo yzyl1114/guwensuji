@@ -51,8 +51,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-    def get_db_connection():
-        """获取数据库连接"""
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row  # 使返回结果像字典一样可访问
-        return conn
+def get_db_connection():
+    """获取数据库连接"""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row  # 使返回结果像字典一样可访问
+    return conn
