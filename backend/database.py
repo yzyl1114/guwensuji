@@ -1,3 +1,7 @@
+import sqlite3  # 这行必须添加在文件顶部
+import os
+from config import DATABASE
+
 def init_db():
     """初始化数据库"""
     conn = sqlite3.connect(DATABASE)
