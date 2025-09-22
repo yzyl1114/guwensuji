@@ -156,6 +156,10 @@ def get_license():
             # 如果已有授权码，直接返回
             print(f"找到现有授权码: {license_data['license_key']}")
             conn.close()
+            
+            # 修复这里：直接访问属性而不是使用 .get() 方法
+            expires_at = license_data['expires_at'] if license_data['expires_at'] else ''
+
             return jsonify({
                 'success': True, 
                 'license_key': license_data['license_key'],
