@@ -1,4 +1,4 @@
-import sqlite3  # 这行必须添加在文件顶部
+import sqlite3
 import os
 from config import DATABASE
 
@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
-    # 创建订单表（确保包含所有必要字段）
+    # 创建订单表
     c.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +21,7 @@ def init_db():
         )
     ''')
     
-    # 创建授权码表（确保order_id字段存在）
+    # 创建授权码表
     c.execute('''
         CREATE TABLE IF NOT EXISTS licenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,11 +35,10 @@ def init_db():
         )
     ''')
     
-    # 添加索引
+    # 添加索引（只保留必要的索引）
     c.execute('CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no ON orders(out_trade_no)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_licenses_order_id ON licenses(order_id)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_licenses_key ON licenses(license_key)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_bindings_license ON device_bindings(license_id)')
     
     conn.commit()
     conn.close()
