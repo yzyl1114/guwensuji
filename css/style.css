@@ -253,6 +253,16 @@ body {
     justify-content: center;
 }
 
+/* 标点符号样式 */
+.char-container.punctuation {
+    margin: 0 8px; /* 标点符号周围有更多空间 */
+}
+
+.char-container.punctuation .chinese-char {
+    font-size: 1.2em; /* 标点符号稍大 */
+    margin-bottom: 0.6em; /* 与有拼音的文字对齐 */
+}
+
 /* 隐藏拼音状态 */
 .article-body.hide-pinyin .pinyin-char {
     display: none;

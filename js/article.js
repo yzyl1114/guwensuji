@@ -1,18 +1,18 @@
-// 文章数据 - 岳阳楼记示例（逐字拼音）
+// 文章数据 - 岳阳楼记示例（移除拼音中的标点符号）
 const articles = {
     1: {
         title: "滕王阁序",
         author: "唐 · 王勃",
         location: "南昌滕王阁背诵免票",
         content: `豫章故郡，洪都新府。星分翼轸，地接衡庐。襟三江而带五湖，控蛮荆而引瓯越。物华天宝，龙光射牛斗之墟；人杰地灵，徐孺下陈蕃之榻。`,
-        pinyin: `yù zhāng gù jùn ， hóng dū xīn fǔ 。 xīng fēn yì zhěn ， dì jiē héng lú 。 jīn sān jiāng ér dài wǔ hú ， kòng mán jīng ér yǐn ōu yuè 。 wù huá tiān bǎo ， lóng guāng shè niú dòu zhī xū ； rén jié dì líng ， xú rú xià chén fān zhī tà 。`
+        pinyin: `yù zhāng gù jùn hóng dū xīn fǔ xīng fēn yì zhěn dì jiē héng lú jīn sān jiāng ér dài wǔ hú kòng mán jīng ér yǐn ōu yuè wù huá tiān bǎo lóng guāng shè niú dòu zhī xū rén jié dì líng xú rú xià chén fān zhī tà`
     },
     2: {
         title: "岳阳楼记",
         author: "宋 · 范仲淹", 
         location: "岳阳楼背诵免票",
         content: `庆历四年春，滕子京谪守巴陵郡。越明年，政通人和，百废具兴。乃重修岳阳楼，增其旧制，刻唐贤今人诗赋于其上。属予作文以记之。`,
-        pinyin: `qìng lì sì nián chūn ， téng zǐ jīng zhé shǒu bā líng jùn 。 yuè míng nián ， zhèng tōng rén hé ， bǎi fèi jù xìng 。 nǎi chóng xiū yuè yáng lóu ， zēng qí jiù zhì ， kè táng xián jīn rén shī fù yú qí shàng 。 shǔ yǔ zuò wén yǐ jì zhī 。`
+        pinyin: `qìng lì sì nián chūn téng zǐ jīng zhé shǒu bā líng jùn yuè míng nián zhèng tōng rén hé bǎi fèi jù xìng nǎi chóng xiū yuè yáng lóu zēng qí jiù zhì kè táng xián jīn rén shī fù yú qí shàng shǔ yǔ zuò wén yǐ jì zhī`
     }
     // 可以继续添加其他文章...
 };
@@ -27,10 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const article = articles[articleId];
     
     if (article) {
-        // 更新页面标题和meta描述（SEO优化）
+        // 更新页面标题和meta描述
         document.title = `${article.title} - 带拼音全文 | ${article.location} - 古文速记`;
         
-        // 创建meta描述标签（如果不存在）
         let metaDescription = document.querySelector('meta[name="description"]');
         if (!metaDescription) {
             metaDescription = document.createElement('meta');
@@ -45,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // 设置测试按钮
         setupQuizButton(articleId);
     } else {
-        // 文章不存在，显示404
         document.getElementById('article-content').innerHTML = `
             <div class="error-page">
                 <h1>文章不存在</h1>
@@ -55,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    // 初始化模态框
     setupModal('licenseModal', 'restoreLicenseLink', '.close');
 });
 
@@ -80,15 +77,17 @@ function renderArticle(article) {
         </article>
     `;
     
-    // 设置拼音切换功能
     setupPinyinToggle();
 }
 
-// 生成逐字拼音内容
+// 生成逐字拼音内容（改进版）
 function generatePinyinContent(content, pinyin) {
-    // 将内容和拼音转换为字符数组
+    // 移除拼音中的标点符号，只保留汉字拼音
+    const cleanPinyin = pinyin.replace(/[，。；！？、]/g, '');
+    
+    // 将内容和拼音转换为数组
     const contentChars = content.split('');
-    const pinyinChars = pinyin.split('');
+    const pinyinArray = cleanPinyin.split(' ').filter(p => p !== '');
     
     let result = '';
     let pinyinIndex = 0;
@@ -96,33 +95,34 @@ function generatePinyinContent(content, pinyin) {
     for (let i = 0; i < contentChars.length; i++) {
         const char = contentChars[i];
         
-        // 跳过空格和标点符号的拼音
-        if (char === ' ' || char === '，' || char === '。' || char === '；' || char === '！' || char === '？') {
-            result += `<span class="char-container"><span class="chinese-char">${char}</span></span>`;
+        // 判断是否为标点符号
+        if (isPunctuation(char)) {
+            result += `<span class="char-container punctuation"><span class="chinese-char">${char}</span></span>`;
             continue;
         }
         
         // 获取当前字符的拼音
-        let currentPinyin = '';
-        while (pinyinIndex < pinyinChars.length && pinyinChars[pinyinIndex] !== ' ') {
-            currentPinyin += pinyinChars[pinyinIndex];
+        if (pinyinIndex < pinyinArray.length) {
+            const currentPinyin = pinyinArray[pinyinIndex];
+            result += `
+                <span class="char-container">
+                    <span class="pinyin-char">${currentPinyin}</span>
+                    <span class="chinese-char">${char}</span>
+                </span>
+            `;
             pinyinIndex++;
+        } else {
+            // 拼音数组长度不足，直接显示汉字
+            result += `<span class="char-container"><span class="chinese-char">${char}</span></span>`;
         }
-        
-        // 跳过空格
-        if (pinyinChars[pinyinIndex] === ' ') {
-            pinyinIndex++;
-        }
-        
-        result += `
-            <span class="char-container">
-                <span class="pinyin-char">${currentPinyin}</span>
-                <span class="chinese-char">${char}</span>
-            </span>
-        `;
     }
     
     return `<div class="pinyin-content">${result}</div>`;
+}
+
+// 判断是否为标点符号
+function isPunctuation(char) {
+    return /[，。；！？、]/.test(char);
 }
 
 // 设置拼音切换功能
@@ -145,13 +145,11 @@ function setupQuizButton(articleId) {
     
     if (quizBtn) {
         quizBtn.addEventListener('click', function() {
-            // 检查付费状态
             const isPaidUser = localStorage.getItem('isPaidUser') === 'true';
             
             if (isPaidUser) {
                 window.location.href = `quiz.html?id=${articleId}`;
             } else {
-                // 显示支付提示
                 alert('请先购买会员权限以解锁完整测试功能');
             }
         });
