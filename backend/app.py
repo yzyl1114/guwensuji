@@ -226,44 +226,39 @@ def get_license():
 
 @app.route('/api/verify_license', methods=['POST'])
 def verify_license():
-    """验证授权码"""
-    data = request.json
-    license_key = data.get('license_key')
-    device_fp = data.get('device_fp')
-    
-    if not license_key or not device_fp:
-        return jsonify({'success': False, 'message': '参数错误'})
-    
-    conn = get_db_connection()
-    license_data = conn.execute(
-        'SELECT * FROM licenses WHERE license_key = ?', (license_key,)
-    ).fetchone()
-    
-    if not license_data:
-        return jsonify({'success': False, 'message': '授权码无效'})
-    
-    # 检查设备是否已绑定
-    devices = [license_data['device_fp_1'], license_data['device_fp_2']]
-    if device_fp in devices:
-        return jsonify({'success': True})
-    
-    # 设备未绑定，检查是否有空位
-    if not license_data['device_fp_1']:
-        conn.execute(
-            'UPDATE licenses SET device_fp_1 = ? WHERE license_key = ?',
-            (device_fp, license_key)
-        )
-    elif not license_data['device_fp_2']:
-        conn.execute(
-            'UPDATE licenses SET device_fp_2 = ? WHERE license_key = ?',
-            (device_fp, license_key)
-        )
-    else:
-        # 两个设备位都已满，覆盖较早的设备
-        conn.execute(
-            'UPDATE licenses SET device_fp_1 = ?, bound_time = CURRENT_TIMESTAMP WHERE license_key = ?',
-            (device_fp, license_key)
-        )
+    """验证授权码有效性"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': '无效的请求数据'})
+        
+        license_key = data.get('license_key')
+        
+        print(f"验证授权码请求: license_key={license_key}")
+        
+        if not license_key:
+            return jsonify({'success': False, 'message': '请输入授权码'})
+        
+        conn = get_db_connection()
+        conn.row_factory = sqlite3.Row
+        
+        # 查询授权码
+        license_data = conn.execute(
+            'SELECT * FROM licenses WHERE license_key = ? AND is_active = 1',
+            (license_key,)
+        ).fetchone()
+        
+        conn.close()
+        
+        if not license_data:
+            return jsonify({'success': False, 'message': '授权码无效或已禁用'})
+        
+        print(f"授权码验证成功: {license_key}")
+        return jsonify({'success': True, 'message': '授权码验证成功'})
+        
+    except Exception as e:
+        print(f"验证授权码时发生错误: {str(e)}")
+        return jsonify({'success': False, 'message': '系统错误，请稍后重试'})
     
     conn.commit()
     conn.close()

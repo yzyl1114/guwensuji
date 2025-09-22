@@ -35,57 +35,84 @@ function setupModal(modalId, openBtnId, closeBtnClass) {
     }
 }
 
+// 验证授权码函数
+async function verifyLicense(licenseKey) {
+    try {
+        const response = await fetch('/api/verify_license', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                license_key: licenseKey
+            })
+        });
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('验证授权码失败:', error);
+        return { success: false, message: '网络错误，请稍后重试' };
+    }
+}
+
 // 恢复权限逻辑
 function setupLicenseRestoration() {
     const restoreBtn = document.getElementById('restoreLicenseBtn');
     if (restoreBtn) {
-        restoreBtn.addEventListener('click', function() {
+        restoreBtn.addEventListener('click', async function() {
             const licenseKey = document.getElementById('licenseKeyInput').value;
-            const deviceFp = generateFingerprint();
+            
+            if (!licenseKey) {
+                alert('请输入授权码');
+                return;
+            }
+            
+            // 显示加载状态
+            const originalText = restoreBtn.textContent;
+            restoreBtn.textContent = '验证中...';
+            restoreBtn.disabled = true;
             
             // 发送验证请求到后端
-            fetch('/api/verify_license', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    license_key: licenseKey,
-                    device_fp: deviceFp
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('权限恢复成功！');
-                    localStorage.setItem('isPaidUser', 'true');
-                    document.getElementById('licenseModal').style.display = 'none';
-                    window.location.reload();
-                } else {
-                    alert('权限恢复失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('网络错误，请稍后重试');
-            });
+            const data = await verifyLicense(licenseKey);
+            
+            // 恢复按钮状态
+            restoreBtn.textContent = originalText;
+            restoreBtn.disabled = false;
+            
+            if (data.success) {
+                alert('权限恢复成功！');
+                // 保存授权状态到本地存储
+                localStorage.setItem('license_key', licenseKey);
+                localStorage.setItem('isPaidUser', 'true');
+                // 关闭模态框
+                document.getElementById('licenseModal').style.display = 'none';
+                // 更新页面显示
+                updatePaidStatusDisplay();
+            } else {
+                alert('权限恢复失败：' + data.message);
+            }
         });
     }
 }
 
-// 在DOM加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 设置恢复权限模态框
-    if (document.getElementById('restoreLicenseLink')) {
-        setupModal('licenseModal', 'restoreLicenseLink', '.close');
+// 检查权限状态
+function checkAccessStatus() {
+    const licenseKey = localStorage.getItem('license_key');
+    const isPaidUser = localStorage.getItem('isPaidUser') === 'true';
+    
+    // 如果有授权码但未验证，自动验证
+    if (licenseKey && !isPaidUser) {
+        verifyLicense(licenseKey).then(data => {
+            if (data.success) {
+                localStorage.setItem('isPaidUser', 'true');
+                updatePaidStatusDisplay();
+            }
+        });
+    } else if (isPaidUser) {
+        updatePaidStatusDisplay();
     }
-    
-    // 设置权限恢复功能
-    setupLicenseRestoration();
-    
-    // 更新页面上的付费状态显示
-    updatePaidStatusDisplay();
-});
+}
 
 // 更新付费状态显示
 function updatePaidStatusDisplay() {
@@ -101,7 +128,57 @@ function updatePaidStatusDisplay() {
     
     // 更新导航栏的恢复权限链接文字
     const restoreLink = document.getElementById('restoreLicenseLink');
-    if (restoreLink && isPaidUser) {
-        restoreLink.textContent = '已付费';
+    if (restoreLink) {
+        if (isPaidUser) {
+            restoreLink.textContent = '已付费';
+            restoreLink.style.display = 'none'; // 已付费用户隐藏恢复链接
+        } else {
+            restoreLink.textContent = '恢复权限';
+            restoreLink.style.display = 'block'; // 未付费用户显示恢复链接
+        }
+    }
+    
+    // 显示或隐藏付费内容
+    const premiumElements = document.querySelectorAll('.premium-only');
+    premiumElements.forEach(el => {
+        el.style.display = isPaidUser ? 'block' : 'none';
+    });
+    
+    // 显示或隐藏免费内容
+    const freeElements = document.querySelectorAll('.free-only');
+    freeElements.forEach(el => {
+        el.style.display = isPaidUser ? 'none' : 'block';
+    });
+}
+
+// 在支付成功页面保存授权码
+function saveLicenseKeyFromURL() {
+    // 检查URL参数中是否有授权码
+    const urlParams = new URLSearchParams(window.location.search);
+    const licenseKey = urlParams.get('license_key');
+    
+    if (licenseKey) {
+        localStorage.setItem('license_key', licenseKey);
+        localStorage.setItem('isPaidUser', 'true');
+        updatePaidStatusDisplay();
     }
 }
+
+// 在DOM加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 设置恢复权限模态框
+    if (document.getElementById('restoreLicenseLink')) {
+        setupModal('licenseModal', 'restoreLicenseLink', '.close');
+    }
+    
+    // 设置权限恢复功能
+    setupLicenseRestoration();
+    
+    // 检查并更新付费状态
+    checkAccessStatus();
+    
+    // 如果是支付成功页面，尝试从URL获取授权码
+    if (window.location.pathname.includes('payment/success')) {
+        saveLicenseKeyFromURL();
+    }
+});

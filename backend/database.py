@@ -35,17 +35,6 @@ def init_db():
         )
     ''')
     
-    # 创建设备绑定表（为权限恢复功能做准备）
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS device_bindings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            license_id INTEGER NOT NULL,
-            device_fingerprint TEXT NOT NULL,
-            bind_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (license_id) REFERENCES licenses(id)
-        )
-    ''')
-    
     # 添加索引
     c.execute('CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no ON orders(out_trade_no)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_licenses_order_id ON licenses(order_id)')
