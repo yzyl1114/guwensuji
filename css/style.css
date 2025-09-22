@@ -79,30 +79,6 @@ body {
     color: #6c757d;
 }
 
-/* 详情页样式 */
-.article-detail h1 {
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-}
-.article-meta {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-    font-style: italic;
-}
-.pinyin-controls {
-    margin-bottom: 1rem;
-}
-.article-body {
-    font-size: 1.2rem;
-    line-height: 2;
-}
-.article-body ruby {
-    margin: 0 2px;
-}
-.article-body.hide-pinyin rt {
-    display: none;
-}
-
 /* 固定底部栏 */
 .fixed-footer {
     position: fixed;
@@ -199,7 +175,142 @@ body {
     gap: 8px;
     margin: 15px 0;
 }
-
 .alipay-button:hover {
     background-color: #0e5fd9;
+}
+
+/* ===== 文章详情页专用 ===== */
+/* 居中布局容器 */
+.article-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 100px; /* 为底部按钮留空间 */
+    text-align: center;    /* 全局居中 */
+}
+
+/* 头部 */
+.article-header {
+    margin-bottom: 30px;
+}
+.article-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    color: #333;
+}
+.article-meta {
+    color: #666;
+    font-size: 1.1em;
+}
+
+/* 拼音控制按钮 */
+.pinyin-controls {
+    margin: 20px 0;
+}
+.pinyin-toggle-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+.pinyin-toggle-btn:hover {
+    background: #f5f5f5;
+}
+
+/* 拼音内容排版 */
+.article-body {
+    line-height: 2.5; /* 增大行高以容纳拼音 */
+    font-size: 1.4em;
+    margin: 30px 0;
+    text-align: center;
+}
+.pinyin-content {
+    display: inline-block;
+    text-align: center;
+}
+.char-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 2px;
+    vertical-align: top;
+}
+.pinyin-char {
+    font-size: 0.6em;
+    color: #e74c3c;
+    height: 1.2em;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.chinese-char {
+    font-size: 1em;
+    height: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 隐藏拼音状态 */
+.article-body.hide-pinyin .pinyin-char {
+    display: none;
+}
+.article-body.hide-pinyin .char-container {
+    margin: 0 1px;
+}
+
+/* 底部固定操作栏（详情页） */
+.article-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+.article-actions .cta-button {
+    background: #1890ff;
+    border-radius: 25px;
+    font-size: 1.1em;
+    padding: 12px 30px;
+}
+.article-actions .cta-button:hover {
+    background: #40a9ff;
+}
+
+/* 错误页（404） */
+.error-page {
+    text-align: center;
+    padding: 50px 20px;
+}
+.back-home {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+}
+
+/* 响应式微调（详情页） */
+@media (max-width: 768px) {
+    .article-container {
+        padding: 15px;
+        padding-bottom: 80px;
+    }
+    .article-header h1 {
+        font-size: 2em;
+    }
+    .article-body {
+        font-size: 1.2em;
+        line-height: 2.2;
+    }
+    .char-container {
+        margin: 0 1px;
+    }
 }
