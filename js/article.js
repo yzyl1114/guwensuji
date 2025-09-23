@@ -86,88 +86,19 @@ const articles = {
 画栋朝飞南浦云，珠帘暮卷西山雨。
 闲云潭影日悠悠，物换星移几度秋。
 阁中帝子今何在？槛外长江空自流。`,
-        pinyin: `yù zhāng gù jùn hóng dū xīn fǔ
-xīng fēn yì zhěn dì jiē héng lú
-jīn sān jiāng ér dài wǔ hú kòng mán jīng ér yǐn ōu yuè
-wù huá tiān bǎo lóng guāng shè niú dǒu zhī xū
-rén jié dì líng xú rú xià chén fān zhī tà
-xióng zhōu wù liè jùn cǎi xīng chí
-tái huáng zhěn yí xià zhī jiāo bīn zhǔ jìn dōng nán zhī měi
-dū dū yán gōng zhī yǎ wàng qǐ jǐ yáo lín
-yǔ wén xīn zhōu zhī yì fàn chān wéi zàn zhù
-shí xún xiū jià shèng yǒu rú yún
-qiān lǐ féng yíng gāo péng mǎn zuò
-téng jiāo qǐ fèng mèng xué shì zhī cí zōng
-zǐ diàn qīng shuāng wáng jiāng jūn zhī wǔ kù
-jiā jūn zuò zǎi lù chū míng qū
-tóng zǐ hé zhī gōng féng shèng jiàn
+        pinyin: `yù zhāng gù jùn hóng dū xīn fǔ xīng fēn yì zhěn dì jiē héng lú jīn sān jiāng ér dài wǔ hú kòng mán jīng ér yǐn ōu yuè wù huá tiān bǎo lóng guāng shè niú dǒu zhī xū rén jié dì líng xú rú xià chén fān zhī tà xióng zhōu wù liè jùn cǎi xīng chí tái huáng zhěn yí xià zhī jiāo bīn zhǔ jìn dōng nán zhī měi dū dū yán gōng zhī yǎ wàng qǐ jǐ yáo lín yǔ wén xīn zhōu zhī yì fàn chān wéi zàn zhù shí xún xiū jià shèng yǒu rú yún qiān lǐ féng yíng gāo péng mǎn zuò téng jiāo qǐ fèng mèng xué shì zhī cí zōng zǐ diàn qīng shuāng wáng jiāng jūn zhī wǔ kù jiā jūn zuò zǎi lù chū míng qū tóng zǐ hé zhī gōng féng shèng jiàn
 
-shí wéi jiǔ yuè xù shǔ sān qiū
-lǎo shuǐ jìn ér hán tán qīng yān guāng níng ér mù shān zǐ
-yǎn cān fēi yú shàng lù fǎng fēng jǐng yú chóng ē
-lín dì zǐ zhī cháng zhōu dé tiān rén zhī jiù guǎn
-céng luán sǒng cuì shàng chū chóng xiāo
-fēi gé liú dān xià lín wú dì
-hè tīng fú zhǔ qióng dǎo yǔ zhī yíng huí
-guì diàn lán gōng jí gāng luán zhī tǐ shì
-pī xiù tà fǔ diāo méng
-shān yuán kuàng qí yíng shì chuān zé yū qí hài zhǔ
-lǘ yán pū dì zhōng míng dǐng shí zhī jiā
-gě jiàn mí jīn qīng què huáng lóng zhī zhú
-yún xiāo yǔ jì cǎi chè qū míng
-luò xiá yǔ gū wù qí fēi qiū shuǐ gòng cháng tiān yī sè
-yú zhōu chàng wǎn xiǎng qióng péng lǐ zhī bīn
-yàn zhèn jīng hán shēng duàn héng yáng zhī pǔ
+shí wéi jiǔ yuè xù shǔ sān qiū lǎo shuǐ jìn ér hán tán qīng yān guāng níng ér mù shān zǐ yǎn cān fēi yú shàng lù fǎng fēng jǐng yú chóng ē lín dì zǐ zhī cháng zhōu dé tiān rén zhī jiù guǎn céng luán sǒng cuì shàng chū chóng xiāo fēi gé liú dān xià lín wú dì hè tīng fú zhǔ qióng dǎo yǔ zhī yíng huí guì diàn lán gōng jí gāng luán zhī tǐ shì pī xiù tà fǔ diāo méng shān yuán kuàng qí yíng shì chuān zé yū qí hài zhǔ lǘ yán pū dì zhōng míng dǐng shí zhī jiā gě jiàn mí jīn qīng què huáng lóng zhī zhú yún xiāo yǔ jì cǎi chè qū míng luò xiá yǔ gū wù qí fēi qiū shuǐ gòng cháng tiān yī sè yú zhōu chàng wǎn xiǎng qióng péng lǐ zhī bīn yàn zhèn jīng hán shēng duàn héng yáng zhī pǔ
 
-yáo jīn fǔ chàng yì xìng chuán fēi
-shuǎng lài fā ér qīng fēng shēng xiān gē níng ér bái yún è
-suī yuán lǜ zhú qì líng péng zé zhī zūn
-yè shuǐ zhū huá guāng zhào lín chuān zhī bǐ
-sì měi jù èr nán bìng
-qióng dì miǎn yú zhōng tiān jí yú yóu yú xiá rì
-tiān gāo dì jiǒng jué yǔ zhòu zhī wú qióng
-xìng jìn bēi lái shí yíng xū zhī yǒu shù
-wàng cháng ān yú rì xià mù wú kuài yú yún jiān
-dì shì jí ér nán míng shēn tiān zhù gāo ér běi chén yuǎn
-guān shān nán yuè shéi bēi shī lù zhī rén
-píng shuǐ xiāng féng jìn shì tā xiāng zhī kè
-huái dì hūn ér bù jiàn fèng xuān shì yǐ hé nián
+yáo jīn fǔ chàng yì xìng chuán fēi shuǎng lài fā ér qīng fēng shēng xiān gē níng ér bái yún è suī yuán lǜ zhú qì líng péng zé zhī zūn yè shuǐ zhū huá guāng zhào lín chuān zhī bǐ sì měi jù èr nán bìng qióng dì miǎn yú zhōng tiān jí yú yóu yú xiá rì tiān gāo dì jiǒng jué yǔ zhòu zhī wú qióng xìng jìn bēi lái shí yíng xū zhī yǒu shù wàng cháng ān yú rì xià mù wú kuài yú yún jiān dì shì jí ér nán míng shēn tiān zhù gāo ér běi chén yuǎn guān shān nán yuè shéi bēi shī lù zhī rén píng shuǐ xiāng féng jìn shì tā xiāng zhī kè huái dì hūn ér bù jiàn fèng xuān shì yǐ hé nián
 
-jiē hū shí yùn bù qí mìng tú duō chuǎn
-féng táng yì lǎo lǐ guǎng nán fēng
-qū jiǎ yì yú cháng shā fēi wú shèng zhǔ
-cuàn liáng hóng yú hǎi qǔ qǐ fá míng shí
-suǒ lài jūn zǐ jiàn jī dá rén zhī mìng
-lǎo dāng yì zhuàng nìng yí bái shǒu zhī xīn
-qióng qiě yì jiān bù zhuì qīng yún zhī zhì
-zhuó tān quán ér jué shuǎng chù hé zhé yǐ yóu huān
-běi hǎi suī shē fú yáo kě jiē
-dōng yú yǐ shì sāng yú fēi wǎn
-mèng cháng gāo jié kōng yú bào guó zhī qíng
-ruǎn jí chāng kuáng qǐ xiào qióng tú zhī kū
+jiē hū shí yùn bù qí mìng tú duō chuǎn féng táng yì lǎo lǐ guǎng nán fēng qū jiǎ yì yú cháng shā fēi wú shèng zhǔ cuàn liáng hóng yú hǎi qǔ qǐ fá míng shí suǒ lài jūn zǐ jiàn jī dá rén zhī mìng lǎo dāng yì zhuàng nìng yí bái shǒu zhī xīn qióng qiě yì jiān bù zhuì qīng yún zhī zhì zhuó tān quán ér jué shuǎng chù hé zhé yǐ yóu huān běi hǎi suī shē fú yáo kě jiē dōng yú yǐ shì sāng yú fēi wǎn mèng cháng gāo jié kōng yú bào guó zhī qíng ruǎn jí chāng kuáng qǐ xiào qióng tú zhī kū
 
-bó sān chǐ wēi mìng yī jiè shū shēng
-wú lù qǐng yīng děng zhōng jūn zhī ruò guàn
-yǒu huái tóu bǐ mù zōng què zhī cháng fēng
-shě zān hù yú bǎi líng fèng chén hūn yú wàn lǐ
-fēi xiè jiā zhī bǎo shù jiē mèng shì zhī fāng lín
-tā rì qū tíng tāo péi lǐ duì
-jīn zī pěng mèi xǐ tuō lóng mén
-yáng yì bù féng fǔ líng yún ér zì xī
-zhōng qī jì yù zòu liú shuǐ yǐ hé cán
+bó sān chǐ wēi mìng yī jiè shū shēng wú lù qǐng yīng děng zhōng jūn zhī ruò guàn yǒu huái tóu bǐ mù zōng què zhī cháng fēng shě zān hù yú bǎi líng fèng chén hūn yú wàn lǐ fēi xiè jiā zhī bǎo shù jiē mèng shì zhī fāng lín tā rì qū tíng tāo péi lǐ duì jīn zī pěng mèi xǐ tuō lóng mén yáng yì bù féng fǔ líng yún ér zì xī zhōng qī jì yù zòu liú shuǐ yǐ hé cán
 
-wū hū shèng dì bù cháng shèng yàn nán zài
-lán tíng yǐ yǐ zǐ zé qiū xū
-lín bié zèng yán xìng chéng ēn yú wěi jiàn
-dēng gāo zuò fù shì suǒ wàng yú qún gōng
-gǎn jié bǐ huái gōng shū duǎn yǐn
-yī yán jūn fù sì yùn jù chéng
-qǐng sǎ pān jiāng gè qīng lù hǎi yún ěr
+wū hū shèng dì bù cháng shèng yàn nán zài lán tíng yǐ yǐ zǐ zé qiū xū lín bié zèng yán xìng chéng ēn yú wěi jiàn dēng gāo zuò fù shì suǒ wàng yú qún gōng gǎn jié bǐ huái gōng shū duǎn yǐn yī yán jūn fù sì yùn jù chéng qǐng sǎ pān jiāng gè qīng lù hǎi yún ěr
 
-téng wáng gāo gé lín jiāng zhǔ pèi yù míng luán bà gē wǔ
-huà dòng cháo fēi nán pǔ yún zhū lián mù juǎn xī shān yǔ
-xián yún tán yǐng rì yōu yōu wù huàn xīng yí jǐ dù qiū
-gé zhōng dì zǐ jīn hé zài kǎn wài cháng jiāng kōng zì liú`
+téng wáng gāo gé lín jiāng zhǔ pèi yù míng luán bà gē wǔ huà dòng cháo fēi nán pǔ yún zhū lián mù juǎn xī shān yǔ xián yún tán yǐng rì yōu yōu wù huàn xīng yí jǐ dù qiū gé zhōng dì zǐ jīn hé zài kǎn wài cháng jiāng kōng zì liú`
     },
     2: {
         title: "岳阳楼记",
