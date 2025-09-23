@@ -74,8 +74,12 @@
             
             // 处理继续学习按钮点击
             document.getElementById('continueLearning').addEventListener('click', function() {
-                // 跳转回测试页面
-                window.location.href = '/quiz.html?id=1';
+                // 获取原文章ID（如果有的话）
+                const urlParams = new URLSearchParams(window.location.search);
+                const articleId = urlParams.get('article_id') || '1';
+                
+                // 跳转回测试页面，并带上标识参数
+                window.location.href = '/quiz.html?id=' + articleId + '&from=payment_success';
             });
             
             // 从URL获取订单号

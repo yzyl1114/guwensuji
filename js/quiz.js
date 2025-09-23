@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 检查付费状态
-    const isPaidUser = localStorage.getItem('isPaidUser') === 'true';
+    let isPaidUser = localStorage.getItem('isPaidUser') === 'true';
     const articleId = getQueryParam('id') || 1;
     
     // 配置参数
@@ -10,10 +10,87 @@ document.addEventListener('DOMContentLoaded', function() {
     let allQuestions = [];
     let usedQuestionIndices = new Set();
     
+        // 添加自定义支付弹窗事件监听
+    const customAlipayBtn = document.getElementById('customAlipayBtn');
+    const customCloseBtn = document.getElementById('customClosePayment');
+    const customModal = document.getElementById('customPaymentModal');
+    
+    if (customAlipayBtn) {
+        customAlipayBtn.addEventListener('click', function() {
+            processAlipayPayment();
+        });
+    }
+    
+    if (customCloseBtn) {
+        customCloseBtn.addEventListener('click', function() {
+            if (customModal) {
+                customModal.style.display = 'none';
+            }
+        });
+    }
+    
+    // 点击弹窗外部关闭
+    if (customModal) {
+        customModal.addEventListener('click', function(event) {
+            if (event.target === customModal) {
+                customModal.style.display = 'none';
+            }
+        });
+    }
+
+    // 支付宝支付处理函数
+    function processAlipayPayment() {
+        // 显示支付中状态
+        const alipayBtn = document.getElementById('customAlipayBtn');
+        if (alipayBtn) {
+            alipayBtn.innerHTML = '<span>支付处理中...</span>';
+            alipayBtn.disabled = true;
+        }
+        
+    // 保存当前文章ID到支付数据中
+        const paymentData = {
+            article_id: articleId // 添加文章ID到支付数据
+        };
+
+        // 原有的支付逻辑
+        fetch('/api/create_order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.pay_url;
+            } else {
+                alert('创建订单失败: ' + (data.message || '未知错误'));
+                // 恢复按钮状态
+                resetPaymentButton();
+            }
+        })
+        .catch(error => {
+            console.error('支付请求错误:', error);
+            alert('网络错误，请稍后重试');
+            // 恢复按钮状态
+            resetPaymentButton();
+        });
+    }
+
+    // 恢复支付按钮状态
+    function resetPaymentButton() {
+        const alipayBtn = document.getElementById('customAlipayBtn');
+        if (alipayBtn) {
+            alipayBtn.innerHTML = '<span class="price">¥1.0</span><span class="btn-text">立即购买</span>';
+            alipayBtn.disabled = false;
+        }
+    }
+
     // 初始化测试
     initQuiz();
     
     // 支付弹窗逻辑
+    /*
     const startPaymentBtn = document.getElementById('startAlipayPayment');
     if (startPaymentBtn) {
         startPaymentBtn.addEventListener('click', showPaymentModal);
@@ -25,14 +102,28 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('paymentModal').style.display = 'none';
         });
     }
+    */
 
     // 初始化测试
     function initQuiz() {
         console.log('初始化测试，文章ID:', articleId);
+            // 检查是否刚从支付成功页面返回
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('from') === 'payment_success') {
+            // 确保付费状态已更新
+            localStorage.setItem('isPaidUser', 'true');
+            // 移除URL参数，避免重复触发
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    
+        // 重新获取付费状态
+        isPaidUser = localStorage.getItem('isPaidUser') === 'true';
+        
         console.log('检查全局变量状态:');
         console.log(' - typeof articles:', typeof articles);
         console.log(' - articles内容:', articles);
-        
+        console.log(' - 付费状态:', isPaidUser);
+
         // 延迟执行以确保article.js完全加载
         setTimeout(() => {
             // 首先尝试获取文章内容
@@ -301,40 +392,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 显示支付弹窗
+    // 替换原来的 showPaymentModal 函数
     function showPaymentModal() {
-        alert("正在准备支付，请稍候...");
-        fetch('/api/create_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.pay_url;
-            } else {
-                alert('创建订单失败: ' + (data.message || '未知错误'));
-            }
-        })
-        .catch(error => {
-            console.error('支付请求错误:', error);
-            alert('网络错误，请稍后重试');
-        });
+        // 显示自定义弹窗
+        const customModal = document.getElementById('customPaymentModal');
+        if (customModal) {
+            customModal.style.display = 'flex';
+        }
     }
-    
-    // 支付成功处理
-    function onPaymentSuccess() {
-        localStorage.setItem('isPaidUser', 'true');
-        alert('支付成功！已解锁全部功能！');
-        document.getElementById('paymentModal').style.display = 'none';
-        currentQuestionIndex = freeQuestionCount;
-        isPaidUser = true;
-        addRefreshButton();
-        document.getElementById('total').textContent = paidQuestionCount;
-        showQuestion(currentQuestionIndex);
-    }
-    
+
     // 智能生成错误选项
     function generateSmartOptions(correctAnswer, fullText) {
         const allSegments = fullText.split(/[，。；！？、]/).filter(segment => 

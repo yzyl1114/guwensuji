@@ -147,6 +147,29 @@
         </div>
     </div>
 
+    <!-- 自定义支付弹窗 -->
+    <div id="customPaymentModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <span class="custom-close-btn" id="customClosePayment">&times;</span>
+                <h2>解锁全文测试</h2>
+                <p class="subtitle">1元永久解锁全部功能</p>
+            </div>
+            <div class="custom-modal-body">
+                <div class="payment-method">
+                    <div class="alipay-logo">
+                        <!-- 可以使用文字或图标 -->
+                        <span>支付宝</span>
+                    </div>
+                    <button id="customAlipayBtn" class="alipay-btn">
+                        <span class="price">¥1.0</span>
+                        <span class="btn-text">立即购买</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
     <script src="js/article.js"></script>
     <script src="js/quiz.js"></script>
