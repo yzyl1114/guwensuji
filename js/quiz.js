@@ -33,15 +33,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // 根据文章ID加载对应的问题
         if (articleId == 1) {
             allQuestions = generateTengwanggeQuestions();
+        } else if (articleId == 2) {
+            // 岳阳楼记使用基础智能生成（后续实现完整版）
+            allQuestions = generateBasicQuestions(getArticleContent(articleId));
+        } else {
+            // 其他文章使用基础智能生成
+            allQuestions = generateBasicQuestions(getArticleContent(articleId));
         }
-        // 可以添加更多文章的问题生成函数
         
         // 恢复进度（如果有）
         const savedProgress = localStorage.getItem('quizProgress');
         if (savedProgress) {
             const progress = JSON.parse(savedProgress);
-            currentQuestionIndex = progress.currentIndex;
-            usedQuestionIndices = new Set(progress.usedIndices);
+            // 只有当文章ID相同时才恢复进度
+            if (progress.articleId == articleId) {
+                currentQuestionIndex = progress.currentIndex;
+                usedQuestionIndices = new Set(progress.usedIndices);
+            } else {
+                // 文章不同，重置进度
+                currentQuestionIndex = 0;
+                usedQuestionIndices = new Set();
+            }
         }
         
         // 根据付费状态确定题目数量
@@ -49,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isPaidUser) {
             questionsToShow = allQuestions.slice(0, freeQuestionCount);
         } else {
-            // 付费用户最多显示10题
             questionsToShow = allQuestions.slice(0, paidQuestionCount);
         }
         
@@ -78,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressEl.appendChild(refreshBtn);
     }
     
-    // 刷新当前题目
+    // 刷新当前题目（修改版）
     function refreshCurrentQuestion() {
         if (usedQuestionIndices.size >= allQuestions.length) {
             alert('所有题目都已尝试过，请开始新测试！');
@@ -86,13 +97,98 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 找一道未使用过的题目
-        let newIndex;
-        do {
-            newIndex = Math.floor(Math.random() * Math.min(allQuestions.length, paidQuestionCount));
-        } while (usedQuestionIndices.has(newIndex) && usedQuestionIndices.size < allQuestions.length);
+        // 不改变题号，只重新生成当前题目的内容
+        const currentQuestionBase = allQuestions[currentQuestionIndex];
         
-        showQuestion(newIndex);
+        // 如果是智能生成的题目，重新生成变体
+        if (currentQuestionBase.isSmartGenerated) {
+            const newVariant = generateQuestionVariant(currentQuestionBase, getArticleContent(articleId));
+            showQuestionVariant(currentQuestionIndex, newVariant);
+        } else {
+            // 对于预定义题目，找一道同类型但不同的题目
+            let newIndex;
+            const availableIndices = [];
+            
+            // 找到所有同类型且未使用的题目
+            for (let i = 0; i < allQuestions.length; i++) {
+                if (!usedQuestionIndices.has(i) && 
+                    allQuestions[i].type === currentQuestionBase.type) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            if (availableIndices.length > 0) {
+                newIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                showQuestion(newIndex);
+            } else {
+                // 如果没有同类型题目，找任何未使用的题目
+                do {
+                    newIndex = Math.floor(Math.random() * allQuestions.length);
+                } while (usedQuestionIndices.has(newIndex) && usedQuestionIndices.size < allQuestions.length);
+                
+                showQuestion(newIndex);
+            }
+        }
+    }
+    
+    // 显示题目变体（不改变题号）
+    function showQuestionVariant(index, variant) {
+        // 保存当前进度（题号不变）
+        usedQuestionIndices.add(index);
+        saveQuizProgress();
+        
+        const questionsToShow = isPaidUser ? 
+            allQuestions.slice(0, paidQuestionCount) : 
+            allQuestions.slice(0, freeQuestionCount);
+            
+        if (index >= questionsToShow.length) {
+            // 题目完成逻辑（保持不变）
+            if (!isPaidUser && questionsToShow.length === freeQuestionCount) {
+                showPaymentModal();
+            } else {
+                alert('恭喜！您已完成所有测试！');
+                setTimeout(() => {
+                    resetQuizProgress();
+                }, 2000);
+            }
+            return;
+        }
+        
+        // 使用变体题目内容
+        const question = variant;
+        
+        // 更新进度显示（题号不变）
+        document.getElementById('current').textContent = index + 1;
+        
+        // 生成题目HTML（使用变体内容）
+        const questionEl = document.getElementById('question');
+        questionEl.innerHTML = '';
+        
+        question.text.forEach(segment => {
+            if (segment.type === 'text') {
+                questionEl.innerHTML += segment.content;
+            } else if (segment.type === 'blank') {
+                questionEl.innerHTML += `
+                    <span class="blank">
+                        <input type="text" id="blank-${segment.id}" data-answer="${segment.answer}" readonly>
+                    </span>
+                `;
+            }
+        });
+        
+        // 生成选项HTML（使用变体选项）
+        const optionsEl = document.getElementById('options');
+        optionsEl.innerHTML = '';
+        
+        question.options.forEach(option => {
+            const optionEl = document.createElement('div');
+            optionEl.className = 'option';
+            optionEl.textContent = option;
+            optionEl.addEventListener('click', function() {
+                checkAnswer(this, option, question.answer);
+            });
+            optionsEl.appendChild(optionEl);
+        });
     }
     
     // 重置测试进度
@@ -166,9 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 保存测试进度
+    // 保存测试进度（修改版，包含文章ID）
     function saveQuizProgress() {
         const progress = {
+            articleId: articleId, // 保存当前文章ID
             currentIndex: currentQuestionIndex,
             usedIndices: Array.from(usedQuestionIndices)
         };
@@ -216,33 +313,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 显示支付弹窗
-// 替换原来的 showPaymentModal 函数
-function showPaymentModal() {
-    // 显示加载提示
-    alert("正在准备支付，请稍候...");
-    
-    // 向后端请求创建订单
-    fetch('/api/create_order', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // 重要：直接跳转到支付宝支付页面
-            console.log("跳转到支付页面:", data.pay_url);
-            window.location.href = data.pay_url;
-        } else {
-            alert('创建订单失败: ' + (data.message || '未知错误'));
-        }
-    })
-    .catch(error => {
-        console.error('支付请求错误:', error);
-        alert('网络错误，请稍后重试');
-    });
-}
+    function showPaymentModal() {
+        // 显示加载提示
+        alert("正在准备支付，请稍候...");
+        
+        // 向后端请求创建订单
+        fetch('/api/create_order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 重要：直接跳转到支付宝支付页面
+                console.log("跳转到支付页面:", data.pay_url);
+                window.location.href = data.pay_url;
+            } else {
+                alert('创建订单失败: ' + (data.message || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('支付请求错误:', error);
+            alert('网络错误，请稍后重试');
+        });
+    }
     
     // 支付成功处理
     function onPaymentSuccess() {
@@ -288,6 +384,98 @@ function showPaymentModal() {
         // 组合选项并随机排序
         const allOptions = [correctAnswer, ...wrongOptions];
         return allOptions.sort(() => 0.5 - Math.random());
+    }
+    
+    // 基础智能题目生成（临时方案）
+    function generateBasicQuestions(content) {
+        if (!content) {
+            // 如果没有文章内容，返回默认题目
+            return [{
+                text: [
+                    {type: 'text', content: '此文章暂无测试题目，'},
+                    {type: 'blank', id: 0, answer: '敬请期待'},
+                    {type: 'text', content: '！'}
+                ],
+                options: ['敬请期待', '即将上线', '开发中'],
+                answer: '敬请期待',
+                isSmartGenerated: true
+            }];
+        }
+        
+        // 简单的按标点分割生成题目
+        const sentences = content.split(/[，。；！？]/).filter(s => s.length > 2);
+        const questions = [];
+        
+        for (let i = 0; i < Math.min(10, sentences.length); i++) {
+            const sentence = sentences[i].trim();
+            if (sentence.length < 3) continue;
+            
+            // 简单的挖空：取句子中间部分
+            const blankStart = Math.floor(sentence.length / 3);
+            const blankLength = Math.floor(sentence.length / 3);
+            const blankText = sentence.substring(blankStart, blankStart + blankLength);
+            
+            const before = sentence.substring(0, blankStart);
+            const after = sentence.substring(blankStart + blankLength);
+            
+            // 生成干扰项：从其他句子中找长度相近的
+            const wrongOptions = [];
+            for (let j = 0; j < sentences.length && wrongOptions.length < 2; j++) {
+                if (j !== i) {
+                    const otherSentence = sentences[j].trim();
+                    if (Math.abs(otherSentence.length - blankText.length) <= 2) {
+                        wrongOptions.push(otherSentence.substring(0, Math.min(blankText.length, otherSentence.length)));
+                    }
+                }
+            }
+            
+            // 如果干扰项不足，用默认项补全
+            while (wrongOptions.length < 2) {
+                wrongOptions.push('默认选项' + wrongOptions.length);
+            }
+            
+            const allOptions = [blankText, ...wrongOptions].sort(() => 0.5 - Math.random());
+            
+            questions.push({
+                text: [
+                    {type: 'text', content: before},
+                    {type: 'blank', id: i, answer: blankText},
+                    {type: 'text', content: after}
+                ],
+                options: allOptions,
+                answer: blankText,
+                isSmartGenerated: true
+            });
+        }
+        
+        return questions.length > 0 ? questions : [{
+            text: [
+                {type: 'text', content: '此文章内容较短，'},
+                {type: 'blank', id: 0, answer: '暂不支持测试'},
+                {type: 'text', content: '。'}
+            ],
+            options: ['暂不支持测试', '内容过短', '无法生成'],
+            answer: '暂不支持测试',
+            isSmartGenerated: true
+        }];
+    }
+    
+    // 生成题目变体（用于刷新功能）
+    function generateQuestionVariant(baseQuestion, fullText) {
+        // 这里可以实现更复杂的变体生成逻辑
+        // 目前简单返回原题目，后续可以改进
+        return {
+            ...baseQuestion,
+            options: generateSmartOptions(baseQuestion.answer, fullText)
+        };
+    }
+    
+    // 获取文章内容（需要与article.js中的文章数据对接）
+    function getArticleContent(articleId) {
+        // 这里需要与您的文章数据对接
+        // 暂时返回空，后续需要根据articleId从文章数据中获取内容
+        // 例如：return articles[articleId]?.content || '';
+        return '';
     }
     
     // 生成滕王阁序测试题目

@@ -442,13 +442,7 @@ function setupQuizButton(articleId) {
     
     if (quizBtn) {
         quizBtn.addEventListener('click', function() {
-            const isPaidUser = localStorage.getItem('isPaidUser') === 'true';
-            
-            if (isPaidUser) {
                 window.location.href = `quiz.html?id=${articleId}`;
-            } else {
-                alert('请先购买会员权限以解锁完整测试功能');
-            }
         });
     }
 }
