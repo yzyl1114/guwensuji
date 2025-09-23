@@ -29,64 +29,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化测试
     function initQuiz() {
         console.log('初始化测试，文章ID:', articleId);
-        console.log('当前页面URL:', window.location.href);
-        // 首先尝试获取文章内容
-        const articleContent = getArticleContent(articleId);
-        console.log('获取到的文章内容:', articleContent ? articleContent.substring(0, 100) + '...' : '空');
+        console.log('检查全局变量状态:');
+        console.log(' - typeof articles:', typeof articles);
+        console.log(' - articles内容:', articles);
         
-        // 根据文章ID和内容生成问题
-        /* 滕王阁序特例已下线
-        if (articleId == 1 && articleContent) {
-            allQuestions = generateTengwanggeQuestions();
-        } else */
-        if (articleContent && articleContent.length > 10) {
-            // 只有内容有效时才尝试智能生成
-            console.log('使用智能生成题目');
-            allQuestions = generateBasicQuestions(articleContent);
-        } else {
-            // 内容无效时使用通用题目
-            console.log('使用通用题目');
-            allQuestions = generateUniversalQuestions();
-        }
-        
-        console.log('生成的题目数量:', allQuestions.length);
-        
-        // 恢复进度
-        const savedProgress = localStorage.getItem('quizProgress');
-        if (savedProgress) {
-            const progress = JSON.parse(savedProgress);
-            if (progress.articleId == articleId) {
-                currentQuestionIndex = progress.currentIndex;
-                usedQuestionIndices = new Set(progress.usedIndices);
+        // 延迟执行以确保article.js完全加载
+        setTimeout(() => {
+            // 首先尝试获取文章内容
+            const articleContent = getArticleContent(articleId);
+            console.log('获取到的文章内容:', articleContent ? articleContent.substring(0, 100) + '...' : '空');
+            
+            // 所有文章都使用智能生成逻辑
+            if (articleContent && articleContent.trim().length > 5) {
+                console.log('使用智能生成题目');
+                allQuestions = generateBasicQuestions(articleContent);
             } else {
-                currentQuestionIndex = 0;
-                usedQuestionIndices = new Set();
+                console.log('使用通用题目');
+                allQuestions = generateUniversalQuestions();
             }
-        }
-        
-        // 根据付费状态确定题目数量
-        let questionsToShow = allQuestions;
-        if (!isPaidUser) {
-            questionsToShow = allQuestions.slice(0, Math.min(freeQuestionCount, allQuestions.length));
-        } else {
-            questionsToShow = allQuestions.slice(0, Math.min(paidQuestionCount, allQuestions.length));
-        }
-        
-        // 更新进度显示
-        document.getElementById('total').textContent = questionsToShow.length;
-        document.getElementById('current').textContent = currentQuestionIndex + 1;
-        
-        // 添加刷新按钮（仅付费用户）
-        if (isPaidUser) {
-            addRefreshButton();
-        }
-        
-        // 显示当前题目
-        if (questionsToShow.length > 0) {
-            showQuestion(currentQuestionIndex);
-        } else {
-            showErrorState();
-        }
+            
+            console.log('生成的题目数量:', allQuestions.length);
+            
+            // 恢复进度
+            const savedProgress = localStorage.getItem('quizProgress');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                if (progress.articleId == articleId) {
+                    currentQuestionIndex = progress.currentIndex;
+                    usedQuestionIndices = new Set(progress.usedIndices);
+                } else {
+                    currentQuestionIndex = 0;
+                    usedQuestionIndices = new Set();
+                }
+            }
+            
+            // 根据付费状态确定题目数量
+            let questionsToShow = allQuestions;
+            if (!isPaidUser) {
+                questionsToShow = allQuestions.slice(0, Math.min(freeQuestionCount, allQuestions.length));
+            } else {
+                questionsToShow = allQuestions.slice(0, Math.min(paidQuestionCount, allQuestions.length));
+            }
+            
+            // 更新进度显示
+            document.getElementById('total').textContent = questionsToShow.length;
+            document.getElementById('current').textContent = currentQuestionIndex + 1;
+            
+            // 添加刷新按钮（仅付费用户）
+            if (isPaidUser) {
+                addRefreshButton();
+            }
+            
+            // 显示当前题目
+            if (questionsToShow.length > 0) {
+                showQuestion(currentQuestionIndex);
+            } else {
+                showErrorState();
+            }
+        }, 100); // 延迟100ms确保article.js加载完成
     }
     
     // 显示错误状态
@@ -357,79 +357,46 @@ document.addEventListener('DOMContentLoaded', function() {
     function getArticleContent(articleId) {
         console.log('尝试获取文章内容，ID:', articleId);
         
-        // 方法1: 从全局变量articles获取
-        if (typeof articles !== 'undefined' && articles[articleId]) {
-            console.log('从全局变量获取到文章内容');
-            return articles[articleId].content;
-        }
-        
-        // 方法2: 检查是否有文章数据在页面中
-        if (window.articleData && window.articleData.content) {
-            console.log('从window.articleData获取到文章内容');
-            return window.articleData.content;
-        }
-        
-        // 方法3: 从DOM中获取 - 扩展更多可能的选择器
-        const possibleSelectors = [
-            '.article-content',
-            '.content',
-            '.article-body',
-            '.post-content',
-            '.entry-content',
-            '.main-content',
-            '#content',
-            '#article-content',
-            'article'
-        ];
-        
-        for (let selector of possibleSelectors) {
-            const element = document.querySelector(selector);
-            if (element) {
-                const text = element.textContent || element.innerText;
-                if (text && text.length > 10) {
-                    console.log(`从选择器 "${selector}" 获取到文章内容`);
-                    return text;
-                }
+        // 方法1: 直接从全局articles变量获取（article.js中定义的）
+        if (typeof articles !== 'undefined') {
+            console.log('找到全局articles变量:', articles);
+            
+            // 尝试用数字ID获取
+            if (articles[articleId]) {
+                console.log('通过数字ID获取到文章:', articles[articleId]);
+                return articles[articleId].content;
+            }
+            
+            // 尝试用字符串ID获取
+            const stringId = articleId.toString();
+            if (articles[stringId]) {
+                console.log('通过字符串ID获取到文章:', articles[stringId]);
+                return articles[stringId].content;
+            }
+            
+            // 如果没有对应ID，尝试获取第一个文章
+            const firstKey = Object.keys(articles)[0];
+            if (firstKey && articles[firstKey]) {
+                console.log('使用第一篇文章作为备用:', articles[firstKey]);
+                return articles[firstKey].content;
             }
         }
         
-        // 方法4: 尝试从页面标题或URL参数获取线索
-        const pageTitle = document.title;
-        console.log('页面标题:', pageTitle);
+        // 方法2: 如果articles不存在，尝试动态加载article.js
+        console.log('articles变量未定义，尝试动态加载article.js');
         
-        // 方法5: 尝试从URL参数获取内容（如果有的话）
-        const urlParams = new URLSearchParams(window.location.search);
-        const contentParam = urlParams.get('content');
-        if (contentParam) {
-            console.log('从URL参数获取到内容');
-            return decodeURIComponent(contentParam);
-        }
-        
-        // 方法6: 最后尝试从所有段落中提取内容
-        const paragraphs = document.querySelectorAll('p');
-        let longestText = '';
-        for (let p of paragraphs) {
-            const text = p.textContent || p.innerText;
-            if (text.length > longestText.length) {
-                longestText = text;
-            }
-        }
-        
-        if (longestText.length > 50) {
-            console.log('从段落中提取到最长文本');
-            return longestText;
-        }
-        
-        console.warn(`未找到文章ID ${articleId} 的内容`);
-        return '';
+        // 由于安全限制，动态加载可能需要调整，这里先返回null
+        console.warn('无法动态加载文章内容，请确保article.js已正确引入');
+        return null;
     }
     
     // 智能题目生成（修复版）
     function generateBasicQuestions(content) {
-        console.log('开始智能生成题目，内容长度:', content.length);
+        console.log('开始智能生成题目，内容长度:', content ? content.length : 0);
         
-        if (!content || content.trim().length < 10) {
-            console.log('内容过短，使用通用题目');
+        // 放宽条件：只要内容存在且长度大于5个字符就尝试生成
+        if (!content || content.trim().length < 5) {
+            console.log('内容过短或为空，使用通用题目');
             return generateUniversalQuestions();
         }
         
@@ -441,6 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const questions = [];
         
+        // 进一步放宽：即使句子不多也尝试生成
         for (let i = 0; i < Math.min(10, candidateSentences.length); i++) {
             const sentence = candidateSentences[i];
             const question = createQuestionFromSentence(sentence, content, i);
@@ -451,8 +419,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('成功生成的题目数量:', questions.length);
         
-        // 如果智能生成失败，使用通用题目
-        return questions.length > 0 ? questions : generateUniversalQuestions();
+        // 即使只生成1个题目也使用
+        if (questions.length > 0) {
+            return questions;
+        } else {
+            console.log('智能生成失败，使用通用题目');
+            return generateUniversalQuestions();
+        }
     }
     
     // 按标点分割句子（修复版）
@@ -471,10 +444,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectCandidateSentences(sentences) {
         return sentences.filter(sentence => {
             const trimmed = sentence.trim();
-            // 放宽条件：长度2-30字符，包含中文即可
-            return trimmed.length >= 2 && 
-                   trimmed.length <= 30 &&
-                   /[\u4e00-\u9fa5]/.test(trimmed); // 包含中文字符
+            // 进一步放宽条件：长度1-50字符，包含中文即可
+            return trimmed.length >= 1 && 
+                trimmed.length <= 50 &&
+                /[\u4e00-\u9fa5]/.test(trimmed);
         });
     }
     
