@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化测试
     function initQuiz() {
         console.log('初始化测试，文章ID:', articleId);
-        
+        console.log('当前页面URL:', window.location.href);
         // 首先尝试获取文章内容
         const articleContent = getArticleContent(articleId);
         console.log('获取到的文章内容:', articleContent ? articleContent.substring(0, 100) + '...' : '空');
@@ -41,9 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else */
         if (articleContent && articleContent.length > 10) {
             // 只有内容有效时才尝试智能生成
+            console.log('使用智能生成题目');
             allQuestions = generateBasicQuestions(articleContent);
         } else {
             // 内容无效时使用通用题目
+            console.log('使用通用题目');
             allQuestions = generateUniversalQuestions();
         }
         
@@ -361,21 +363,61 @@ document.addEventListener('DOMContentLoaded', function() {
             return articles[articleId].content;
         }
         
-        // 方法2: 从DOM中获取
-        const articleElement = document.querySelector('.article-content');
-        if (articleElement) {
-            console.log('从DOM元素获取到文章内容');
-            return articleElement.textContent || articleElement.innerText;
+        // 方法2: 检查是否有文章数据在页面中
+        if (window.articleData && window.articleData.content) {
+            console.log('从window.articleData获取到文章内容');
+            return window.articleData.content;
         }
         
-        // 方法3: 尝试从页面其他位置获取
-        const contentElements = document.querySelectorAll('p, div.content, article');
-        for (let el of contentElements) {
-            const text = el.textContent || el.innerText;
-            if (text && text.length > 50) { // 假设有效内容至少50字符
-                console.log('从通用元素获取到文章内容');
-                return text;
+        // 方法3: 从DOM中获取 - 扩展更多可能的选择器
+        const possibleSelectors = [
+            '.article-content',
+            '.content',
+            '.article-body',
+            '.post-content',
+            '.entry-content',
+            '.main-content',
+            '#content',
+            '#article-content',
+            'article'
+        ];
+        
+        for (let selector of possibleSelectors) {
+            const element = document.querySelector(selector);
+            if (element) {
+                const text = element.textContent || element.innerText;
+                if (text && text.length > 10) {
+                    console.log(`从选择器 "${selector}" 获取到文章内容`);
+                    return text;
+                }
             }
+        }
+        
+        // 方法4: 尝试从页面标题或URL参数获取线索
+        const pageTitle = document.title;
+        console.log('页面标题:', pageTitle);
+        
+        // 方法5: 尝试从URL参数获取内容（如果有的话）
+        const urlParams = new URLSearchParams(window.location.search);
+        const contentParam = urlParams.get('content');
+        if (contentParam) {
+            console.log('从URL参数获取到内容');
+            return decodeURIComponent(contentParam);
+        }
+        
+        // 方法6: 最后尝试从所有段落中提取内容
+        const paragraphs = document.querySelectorAll('p');
+        let longestText = '';
+        for (let p of paragraphs) {
+            const text = p.textContent || p.innerText;
+            if (text.length > longestText.length) {
+                longestText = text;
+            }
+        }
+        
+        if (longestText.length > 50) {
+            console.log('从段落中提取到最长文本');
+            return longestText;
         }
         
         console.warn(`未找到文章ID ${articleId} 的内容`);
