@@ -186,11 +186,11 @@ body {
     margin: 0 auto;
     padding: 20px;
     padding-bottom: 100px; /* 为底部按钮留空间 */
-    text-align: left;    /* 左对齐 */
 }
 
 /* 头部 */
 .article-header {
+    text-align: center;    /* 左对齐 */
     margin-bottom: 30px;
 }
 .article-header h1 {
@@ -205,6 +205,7 @@ body {
 
 /* 拼音控制按钮 */
 .pinyin-controls {
+    margin: 20px 0;
     margin: 20px 0;
 }
 .pinyin-toggle-btn {
@@ -224,18 +225,19 @@ body {
     line-height: 2.5; /* 增大行高以容纳拼音 */
     font-size: 1.4em;
     margin: 30px 0;
-    text-align: center;
+    text-align: left;
 }
 .pinyin-content {
     display: inline-block;
     text-align: center;
+    line-height: 2.5; /* 整体行高 */
 }
 .char-container {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
     margin: 0 2px;
-    vertical-align: top;
+    vertical-align: bottom;
 }
 .pinyin-char {
     font-size: 0.6em;
@@ -256,11 +258,15 @@ body {
 /* 标点符号样式 */
 .char-container.punctuation {
     margin: 0 8px; /* 标点符号周围有更多空间 */
+    vertical-align: bottom; /* 确保标点符号底部对齐 */
 }
 
 .char-container.punctuation .chinese-char {
     font-size: 1.2em; /* 标点符号稍大 */
-    margin-bottom: 0.6em; /* 与有拼音的文字对齐 */
+    margin-bottom: 0; /* 移除底部间距 */
+    display: inline-block;
+    vertical-align: bottom; /* 标点符号底部对齐 */
+    line-height: 1; /* 确保行高正常 */
 }
 
 /* 隐藏拼音状态 */

@@ -230,14 +230,14 @@ function generatePinyinContent(content, pinyin) {
 // 规范化拼音字符串
 function normalizePinyin(pinyin) {
     return pinyin
-        .replace(/[，。；！？、\r\n]/g, ' ')  // 将标点和换行符替换为空格
+        .replace(/[，。；！？、:\r\n]/g, ' ')  // 将标点和换行符替换为空格
         .replace(/\s+/g, ' ')                // 将多个空格合并为一个
         .trim();                             // 去除首尾空格
 }
 
 // 判断是否为标点符号
 function isPunctuation(char) {
-    return /[，。；！？、]/.test(char);
+    return /[，。；！？、:]/.test(char);
 }
 
 // 设置拼音切换功能
