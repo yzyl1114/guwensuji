@@ -157,14 +157,15 @@
             </div>
             <div class="custom-modal-body">
                 <div class="payment-method">
-                    <div class="payment-icon">
-                        <span>支</span> <!-- 这里可以替换为支付宝图标图片 -->
-                    </div>
-                    <div class="payment-info">
-                        <div class="payment-name">支付宝</div>
-                        <div class="payment-desc">推荐使用，安全快捷</div>
-                    </div>
-                    <div class="payment-selector selected" id="alipaySelector"></div>
+                    <div class="payment-left">
+                            <div class="payment-icon">
+                                <img id="alipayLogo" src="/images/alipay-logo.png" alt="支付宝">
+                            </div>
+                            <div class="payment-name">支付宝</div>
+                        </div>
+
+                        <!-- 右侧：勾选按钮 -->
+                        <div class="payment-selector selected" id="alipaySelector"></div>
                 </div>
                 
                 <button id="customAlipayBtn" class="alipay-btn">
