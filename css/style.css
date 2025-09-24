@@ -220,12 +220,12 @@ body {
     background: #f5f5f5;
 }
 
-/* 拼音内容排版 */
+/* 内容排版 */
 .article-body {
     line-height: 2.5; /* 增大行高以容纳拼音 */
     font-size: 1.4em;
     margin: 30px 0;
-    text-align: justify;
+    text-align: left;
     text-align-last: left;
 }
 .pinyin-content {
