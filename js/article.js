@@ -349,7 +349,7 @@ function renderArticle(article) {
                 <button id="togglePinyin" class="pinyin-toggle-btn">隐藏拼音</button>
             </div>
             
-            <div class="article-body with-pinyin">
+            <div class="article-body hide-pinyin">
                 ${generatePinyinContent(article.content, article.pinyin)}
             </div>
         </article>
