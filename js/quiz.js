@@ -223,11 +223,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 刷新当前题目（优化版）
+    // 修改刷新当前题目函数，为付费用户生成全新题目
     function refreshCurrentQuestion() {
         if (usedQuestionIndices.size >= allQuestions.length) {
-            alert('所有题目都已尝试过，请开始新测试！');
-            resetQuizProgress();
-            return;
+            // 如果是付费用户，重新生成题目而不是提示完成
+            if (isPaidUser) {
+                // 重新生成题目
+                const articleContent = getArticleContent(articleId);
+                if (articleContent && articleContent.trim().length > 5) {
+                    allQuestions = generateBasicQuestions(articleContent);
+                    usedQuestionIndices = new Set();
+                    currentQuestionIndex = 0;
+                    alert('已为您生成新的测试题目！');
+                    showQuestion(0);
+                } else {
+                    alert('无法生成新题目，请稍后重试！');
+                }
+                return;
+            } else {
+                alert('所有题目都已尝试过，请开始新测试！');
+                resetQuizProgress();
+                return;
+            }
         }
         
         const currentQuestionBase = allQuestions[currentQuestionIndex];
@@ -314,6 +331,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 重置测试进度
     function resetQuizProgress() {
+        // 如果是付费用户，重新生成题目而不是简单重置
+        if (isPaidUser) {
+            const articleContent = getArticleContent(articleId);
+            if (articleContent && articleContent.trim().length > 5) {
+                allQuestions = generateBasicQuestions(articleContent);
+                usedQuestionIndices = new Set();
+                currentQuestionIndex = 0;
+                alert('已为您生成新的测试题目！');
+                showQuestion(0);
+                saveQuizProgress(); // 保存新题目的进度
+                return;
+            }
+        }
+            // 免费用户或生成失败时使用原有逻辑
         localStorage.removeItem('quizProgress');
         currentQuestionIndex = 0;
         usedQuestionIndices = new Set();
@@ -686,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // 生成滕王阁序测试题目（优化版）- 需要保留！
+    // 生成滕王阁序测试题目（优化版）
     /*滕王阁序测试题下线
     function generateTengwanggeQuestions() {
         const fullText = getArticleContent(1);
