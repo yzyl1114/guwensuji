@@ -5,9 +5,17 @@
     padding: 0;
 }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family:
+        "Noto Sans SC",          /* Google 版思源黑体 */
+        "Source Han Sans SC",    /* Adobe 版名称（旧系统） */
+        "PingFang SC",          /* macOS 苹方 */
+        "Microsoft YaHei",      /* Windows 雅黑 */
+        "WenQuanYi Micro Hei",  /* Linux 文泉驿 */
+        sans-serif;
     line-height: 1.6;
     color: #333;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     padding-bottom: 70px; /* 为固定底部栏留出空间 */
 }
 
@@ -69,8 +77,13 @@ body {
     object-fit: cover;
 }
 .article-content {
-    padding: 1.5rem;
+    padding: 1.5rem;    
 }
+
+.article-content a {
+    text-decoration: none;
+}
+
 .article-content h2 {
     margin-bottom: 0.5rem;
     color: #2c3e50;
@@ -264,9 +277,10 @@ body {
 }
 
 .char-container.punctuation .chinese-char {
-    font-size: 1.2em; /* 标点符号稍大 */
+    font-size: 1em; /* 恢复字号 */
     margin-bottom: 0; /* 移除底部间距 */
     display: inline-block;
+    transform: translateX(0.15em) translateY(0.08em); /* 右下移一点 */
     vertical-align: bottom; /* 标点符号底部对齐 */
     line-height: 1; /* 确保行高正常 */
 }
@@ -544,7 +558,7 @@ body {
 }
 
 .agreement a:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 /* 响应式设计 */
