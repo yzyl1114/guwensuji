@@ -412,16 +412,9 @@ body {
 }
 
 /* 支付方式样式 */
-.payment-left{
-    display:flex;
-    align-items:center;        /* 同一高度 */
-    gap:10px;                  /* logo 与文字间距 */
-}
-
 .payment-method {
     display: flex;
     align-items: center;
-    justify-content:space-between;   /* 左贴左，右贴右 */
     margin-bottom: 20px;
     padding: 15px;
     border: 1px solid #e0e0e0;
@@ -445,13 +438,6 @@ body {
     color: white;
     font-weight: bold;
     font-size: 16px;
-}
-
-.payment-icon img{
-    width:100%;      /* 撑满 50×50 的圆框 */
-    height:100%;
-    object-fit:contain;
-    border-radius:50%;   /* 若 logo 本身带圆角可去掉 */
 }
 
 .payment-info {
@@ -478,6 +464,7 @@ body {
     justify-content: center;
     cursor: pointer;
     flex-shrink: 0;
+    margin-left: 10px;
 }
 
 .payment-selector.selected {
