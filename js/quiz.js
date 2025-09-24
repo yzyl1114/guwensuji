@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
             */
 
             // 使用新的选项生成逻辑，从全文选取干扰项
-            const options = generateOptionsFromFullText(halfSentence, fullText, fullSentence);
+            const options = generateOptionsFromFullText(cleanHalfSentence, fullText, fullSentence);
             
             // 确保选项有效
             if (options.length < 3) {
@@ -575,11 +575,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return {
                 text: [
                     {type: 'text', content: before},
-                    {type: 'blank', id: questionId, answer: halfSentence},
+                    {type: 'blank', id: questionId, answer: cleanHalfSentence},
                     {type: 'text', content: after}
                 ],
                 options: options,
-                answer: halfSentence,
+                answer: cleanHalfSentence,
                 isSmartGenerated: true
             };
         } catch (error) {
