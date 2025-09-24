@@ -536,15 +536,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function createQuestionFromHalfSentence(fullSentence, halfSentence, questionId, fullText) {
         try {
             if (!halfSentence || halfSentence.length < 2) return null;
+            // 去除标点符号（只保留中文和数字）
+            const cleanHalfSentence = halfSentence.replace(/[，。！？；：、\s]/g, '');
+            if (cleanHalfSentence.length < 2) return null;
             
-            // 查找半句在完整句子中的位置
-            const halfSentenceIndex = fullSentence.indexOf(halfSentence);
+            // 查找清理后的半句在完整句子中的位置
+            const cleanSentence = fullSentence.replace(/[，。！？；：、\s]/g, '');
+            const halfSentenceIndex = cleanSentence.indexOf(cleanHalfSentence);
             if (halfSentenceIndex === -1) return null;
             
             // 获取上下文（在完整句子内）
+            // 需要找到原句中的对应位置，而不是清理后的位置
+            const originalIndex = findOriginalPosition(fullSentence, cleanHalfSentence);
+            if (originalIndex === -1) return null;
+            
+            const before = fullSentence.substring(0, originalIndex);
+            const after = fullSentence.substring(originalIndex + cleanHalfSentence.length);
+                
+            /*未处理标点符号前的逻辑
+            // 查找半句在完整句子中的位置
+            const halfSentenceIndex = fullSentence.indexOf(halfSentence);
+            if (halfSentenceIndex === -1) return null;
+
+            // 获取上下文（在完整句子内）
             const before = fullSentence.substring(0, halfSentenceIndex);
             const after = fullSentence.substring(halfSentenceIndex + halfSentence.length);
-            
+            */
+
             // 使用新的选项生成逻辑，从全文选取干扰项
             const options = generateOptionsFromFullText(halfSentence, fullText, fullSentence);
             
@@ -569,26 +587,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
     }
+ 
+        // 新增辅助函数：在原句中查找清理后文本的位置
+    function findOriginalPosition(originalText, cleanText) {
+        // 简单的查找逻辑
+        return originalText.indexOf(cleanText);
+    }
+    
     // 从全文生成选项（避免使用当前句子的其他半句）
     function generateOptionsFromFullText(correctAnswer, fullText, currentSentence) {
         try {
-            // 从全文分割所有半句
+            // 从全文分割所有半句，并清理标点符号
             const allHalfSentences = fullText.split(/[，。！？；：]/g)
                 .filter(hs => hs && hs.trim().length >= 2)
-                .map(hs => hs.trim());
+                .map(hs => hs.replace(/[，。！？；：、\s]/g, '').trim())
+                .filter(hs => hs.length >= 2);
             
             // 移除正确答案和当前句子中的所有半句
             const currentSentenceHalfSentences = currentSentence.split(/[，；]/g)
                 .filter(hs => hs && hs.trim().length >= 2)
-                .map(hs => hs.trim());
+                .map(hs => hs.replace(/[，。！？；：、\s]/g, '').trim())
+                .filter(hs => hs.length >= 2);
             
-            // 排除当前句子中的所有半句，避免干扰项与题干重复
+            // 排除当前句子中的所有半句
             const candidatePool = allHalfSentences.filter(hs => 
                 hs !== correctAnswer && 
                 !currentSentenceHalfSentences.includes(hs)
             );
             
             console.log(`正确答案: "${correctAnswer}", 候选池大小: ${candidatePool.length}`);
+            
             
             // 如果候选池太小，添加一些通用选项
             let finalCandidatePool = candidatePool;
