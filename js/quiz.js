@@ -14,7 +14,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const customAlipayBtn = document.getElementById('customAlipayBtn');
     const customCloseBtn = document.getElementById('customClosePayment');
     const customModal = document.getElementById('customPaymentModal');
-    
+    const alipaySelector = document.getElementById('alipaySelector');
+
+    // 支付方式选择逻辑
+    if (alipaySelector) {
+        alipaySelector.addEventListener('click', function() {
+            const isSelected = alipaySelector.classList.contains('selected');
+            
+            if (isSelected) {
+                alipaySelector.classList.remove('selected');
+                customAlipayBtn.disabled = true;
+            } else {
+                alipaySelector.classList.add('selected');
+                customAlipayBtn.disabled = false;
+            }
+        });
+    }
+
     if (customAlipayBtn) {
         customAlipayBtn.addEventListener('click', function() {
             processAlipayPayment();
@@ -40,6 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 支付宝支付处理函数
     function processAlipayPayment() {
+        // 如果按钮被禁用，则不处理
+        if (customAlipayBtn.disabled) {
+            return;
+        }    
+        
         // 显示支付中状态
         const alipayBtn = document.getElementById('customAlipayBtn');
         if (alipayBtn) {
@@ -47,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alipayBtn.disabled = true;
         }
         
-    // 保存当前文章ID到支付数据中
+        // 保存当前文章ID到支付数据中
         const paymentData = {
             article_id: articleId // 添加文章ID到支付数据
         };
@@ -80,9 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 恢复支付按钮状态
     function resetPaymentButton() {
         const alipayBtn = document.getElementById('customAlipayBtn');
+        const alipaySelector = document.getElementById('alipaySelector');
         if (alipayBtn) {
             alipayBtn.innerHTML = '<span class="price">¥1.0</span><span class="btn-text">立即购买</span>';
-            alipayBtn.disabled = false;
+            // 根据支付方式选择器的状态来设置按钮的禁用状态
+            alipayBtn.disabled = !alipaySelector.classList.contains('selected');
         }
     }
 
