@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 对每个完整句子，生成可能的题目
         for (let i = 0; i < Math.min(10, fullSentences.length); i++) {
             const sentence = fullSentences[i];
-            const sentenceQuestions = createQuestionsFromSentence(sentence, i);
+            const sentenceQuestions = createQuestionsFromSentence(sentence, i, content);
             questions.push(...sentenceQuestions);
             
             // 如果已经达到10个题目，提前结束
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedIndices.add(randomIndex);
                 
                 const halfSentence = halfSentences[randomIndex];
-                const question = createQuestionFromHalfSentence(sentence, halfSentence, baseId * 10 + randomIndex);
+                const question = createQuestionFromHalfSentence(sentence, halfSentence, baseId * 10 + randomIndex, fullText);
                 if (question) {
                     questions.push(question);
                 }
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 从完整句子和半句创建题目
-    function createQuestionFromHalfSentence(fullSentence, halfSentence, questionId) {
+    function createQuestionFromHalfSentence(fullSentence, halfSentence, questionId, fullText) {
         try {
             if (!halfSentence || halfSentence.length < 2) return null;
             
