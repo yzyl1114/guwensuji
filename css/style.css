@@ -440,6 +440,13 @@ body {
     font-size: 16px;
 }
 
+.payment-icon img{
+    width:100%;      /* 撑满 50×50 的圆框 */
+    height:100%;
+    object-fit:contain;
+    border-radius:50%;   /* 若 logo 本身带圆角可去掉 */
+}
+
 .payment-info {
     flex-grow: 1;
 }
@@ -525,7 +532,7 @@ body {
 
 .agreement {
     text-align: center;
-    font-size: 12px;
+    font-size: 9px;
     color: #999;
 }
 
