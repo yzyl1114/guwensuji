@@ -452,73 +452,110 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('内容过短或为空，使用通用题目');
             return generateUniversalQuestions();
         }
-    
-        // 直接按标点分割成半句
-        const segments = content.split(/[，。！？；：]/g)
-            .filter(segment => segment && segment.trim().length > 2)
-            .map(segment => segment.trim());
-        
-        console.log('分割出的半句数量:', segments.length);
-        
-        // 随机选择10个不同的半句（如果不够10个就用全部）
-        const selectedSegments = selectRandomSegments(segments, 10);
-        console.log('选中的半句数量:', selectedSegments.length);
+        // 先按完整句子分割（以句号、问号、感叹号等结尾）
+        const fullSentences = splitIntoFullSentences(content);
+        console.log('分割出的完整句子数量:', fullSentences.length);
         
         const questions = [];
         
-        for (let i = 0; i < selectedSegments.length; i++) {
-            const segment = selectedSegments[i];
-            const question = createSimpleQuestion(segment, content, i);
-            if (question) {
-                questions.push(question);
-            }
+        // 对每个完整句子，生成可能的题目
+        for (let i = 0; i < Math.min(10, fullSentences.length); i++) {
+            const sentence = fullSentences[i];
+            const sentenceQuestions = createQuestionsFromSentence(sentence, i);
+            questions.push(...sentenceQuestions);
+            
+            // 如果已经达到10个题目，提前结束
+            if (questions.length >= 10) break;
         }
         
         console.log('成功生成的题目数量:', questions.length);
         
         if (questions.length > 0) {
-            return questions;
+            return questions.slice(0, 10); // 最多返回10个题目
         } else {
             console.log('智能生成失败，使用通用题目');
             return generateUniversalQuestions();
         }
     }
 
-    // 随机选择指定数量的半句
-    function selectRandomSegments(segments, count) {
-        if (segments.length <= count) {
-            return [...segments]; // 返回所有半句的副本
-        }
+    // 按完整句子分割（以句号、问号、感叹号等结尾）
+    function splitIntoFullSentences(content) {
+        if (!content) return [];
         
-        // 随机选择不重复的半句
-        const shuffled = [...segments].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
+        // 按中文句子结束标点分割
+        const sentences = content.split(/(?<=[。！？])/g)
+            .filter(s => s && s.trim().length > 0)
+            .map(s => s.trim());
+            
+        return sentences;
     }
 
-    // 创建简单题目（直接挖空整个半句）
-    function createSimpleQuestion(segment, fullText, questionId) {
+    // 从一个完整句子创建题目
+    function createQuestionsFromSentence(sentence, baseId, fullText) {
+        const questions = [];
+        
+        // 将句子按逗号、分号等分割成半句
+        const halfSentences = sentence.split(/[，；]/g)
+            .filter(hs => hs && hs.trim().length >= 2)
+            .map(hs => hs.trim());
+        
+        console.log(`句子"${sentence}"分割出的半句:`, halfSentences);
+        
+        if (halfSentences.length < 2) {
+            // 如果句子只有一个半句，无法挖空，跳过
+            return questions;
+        }
+        
+        // 随机选择1-2个半句进行挖空（避免题目太多）
+        const numBlanks = Math.min(2, halfSentences.length - 1);
+        const selectedIndices = new Set();
+        
+        while (selectedIndices.size < numBlanks && selectedIndices.size < halfSentences.length) {
+            const randomIndex = Math.floor(Math.random() * halfSentences.length);
+            if (!selectedIndices.has(randomIndex)) {
+                selectedIndices.add(randomIndex);
+                
+                const halfSentence = halfSentences[randomIndex];
+                const question = createQuestionFromHalfSentence(sentence, halfSentence, baseId * 10 + randomIndex);
+                if (question) {
+                    questions.push(question);
+                }
+            }
+        }
+        
+        return questions;
+    }
+
+    // 从完整句子和半句创建题目
+    function createQuestionFromHalfSentence(fullSentence, halfSentence, questionId) {
         try {
-            if (!segment || segment.length < 2) return null;
+            if (!halfSentence || halfSentence.length < 2) return null;
             
-            // 查找这个半句在原文中的位置
-            const segmentIndex = fullText.indexOf(segment);
-            if (segmentIndex === -1) return null;
+            // 查找半句在完整句子中的位置
+            const halfSentenceIndex = fullSentence.indexOf(halfSentence);
+            if (halfSentenceIndex === -1) return null;
             
-            // 获取上下文
-            const before = fullText.substring(0, segmentIndex);
-            const after = fullText.substring(segmentIndex + segment.length);
+            // 获取上下文（在完整句子内）
+            const before = fullSentence.substring(0, halfSentenceIndex);
+            const after = fullSentence.substring(halfSentenceIndex + halfSentence.length);
             
-            // 生成干扰选项
-            const options = generateSimpleOptions(segment, fullText);
+            // 使用新的选项生成逻辑，从全文选取干扰项
+            const options = generateOptionsFromFullText(halfSentence, fullText, fullSentence);
+            
+            // 确保选项有效
+            if (options.length < 3) {
+                console.warn('选项数量不足，跳过此题');
+                return null;
+            }
             
             return {
                 text: [
                     {type: 'text', content: before},
-                    {type: 'blank', id: questionId, answer: segment},
+                    {type: 'blank', id: questionId, answer: halfSentence},
                     {type: 'text', content: after}
                 ],
                 options: options,
-                answer: segment,
+                answer: halfSentence,
                 isSmartGenerated: true
             };
         } catch (error) {
@@ -526,35 +563,66 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
     }
-
-    // 生成简单选项（从其他半句中随机选择）
-    function generateSimpleOptions(correctAnswer, fullText) {
-        // 分割所有半句
-        const allSegments = fullText.split(/[，。！？；：]/g)
-            .filter(segment => segment && segment.trim().length > 1)
-            .map(segment => segment.trim());
-        
-        // 移除正确答案
-        const otherSegments = allSegments.filter(segment => segment !== correctAnswer);
-        
-        // 如果其他半句不够，添加一些通用选项
-        let candidatePool = otherSegments;
-        if (otherSegments.length < 2) {
-            candidatePool = candidatePool.concat([
-                '天地玄黄', '宇宙洪荒', '日月盈昃', '辰宿列张',
-                '寒来暑往', '秋收冬藏', '云腾致雨', '露结为霜'
-            ]);
+    // 从全文生成选项（避免使用当前句子的其他半句）
+    function generateOptionsFromFullText(correctAnswer, fullText, currentSentence) {
+        try {
+            // 从全文分割所有半句
+            const allHalfSentences = fullText.split(/[，。！？；：]/g)
+                .filter(hs => hs && hs.trim().length >= 2)
+                .map(hs => hs.trim());
+            
+            // 移除正确答案和当前句子中的所有半句
+            const currentSentenceHalfSentences = currentSentence.split(/[，；]/g)
+                .filter(hs => hs && hs.trim().length >= 2)
+                .map(hs => hs.trim());
+            
+            // 排除当前句子中的所有半句，避免干扰项与题干重复
+            const candidatePool = allHalfSentences.filter(hs => 
+                hs !== correctAnswer && 
+                !currentSentenceHalfSentences.includes(hs)
+            );
+            
+            console.log(`正确答案: "${correctAnswer}", 候选池大小: ${candidatePool.length}`);
+            
+            // 如果候选池太小，添加一些通用选项
+            let finalCandidatePool = candidatePool;
+            if (candidatePool.length < 2) {
+                const genericOptions = [
+                    '天地玄黄', '宇宙洪荒', '日月盈昃', '辰宿列张',
+                    '寒来暑往', '秋收冬藏', '云腾致雨', '露结为霜',
+                    '金生丽水', '玉出昆冈', '剑号巨阙', '珠称夜光',
+                    '推位让国', '有虞陶唐', '吊民伐罪', '周发殷汤',
+                    '坐朝问道', '垂拱平章', '爱育黎首', '臣伏戎羌',
+                    '果珍李柰', '菜重芥姜', '海咸河淡', '鳞潜羽翔'
+                ].filter(opt => opt !== correctAnswer && !currentSentenceHalfSentences.includes(opt));
+                
+                finalCandidatePool = candidatePool.concat(genericOptions);
+            }
+            
+            // 优先选择长度相近的半句
+            const correctLength = correctAnswer.length;
+            const lengthMatched = finalCandidatePool.filter(hs => 
+                Math.abs(hs.length - correctLength) <= 2
+            );
+            
+            // 如果长度匹配的选项足够，使用它们
+            const sourcePool = lengthMatched.length >= 2 ? lengthMatched : finalCandidatePool;
+            
+            // 随机选择2个干扰项
+            const shuffled = [...sourcePool].sort(() => 0.5 - Math.random());
+            const wrongOptions = shuffled.slice(0, 2);
+            
+            // 合并选项并随机排序
+            const allOptions = [correctAnswer, ...wrongOptions];
+            return allOptions.sort(() => 0.5 - Math.random());
+            
+        } catch (error) {
+            console.error('生成选项时出错:', error);
+            // 出错时返回基本选项
+            return [correctAnswer, '选项一', '选项二'].sort(() => 0.5 - Math.random());
         }
-        
-        // 随机选择2个干扰项
-        const shuffled = [...candidatePool].sort(() => 0.5 - Math.random());
-        const wrongOptions = shuffled.slice(0, 2);
-        
-        // 合并选项并随机排序
-        const allOptions = [correctAnswer, ...wrongOptions];
-        return allOptions.sort(() => 0.5 - Math.random());
     }
-    
+
     // 通用题目生成（符合填空测试逻辑）
     function generateUniversalQuestions() {
         console.log('生成通用填空题目');

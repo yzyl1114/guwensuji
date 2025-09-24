@@ -225,7 +225,8 @@ body {
     line-height: 2.5; /* 增大行高以容纳拼音 */
     font-size: 1.4em;
     margin: 30px 0;
-    text-align: left;
+    text-align: justify;
+    text-align-last: left;
 }
 .pinyin-content {
     display: inline-block;
@@ -241,7 +242,7 @@ body {
 }
 .pinyin-char {
     font-size: 0.6em;
-    color: #e74c3c;
+    color: #7d8e95;
     height: 1.2em;
     display: flex;
     align-items: flex-end;
