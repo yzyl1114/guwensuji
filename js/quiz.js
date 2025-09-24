@@ -369,7 +369,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 检查答案
     function checkAnswer(optionEl, selectedOption, correctAnswer) {
-        const blankInput = document.getElementById(`blank-${currentQuestionIndex}`);
+        const blankInput = document.querySelector(`input[data-answer="${correctAnswer}"]`);
+        
+        if (!blankInput) {
+            console.error('找不到空白输入框，正确答案:', correctAnswer);
+            return;
+        }
+        
         blankInput.value = selectedOption;
         
         if (selectedOption === correctAnswer) {
