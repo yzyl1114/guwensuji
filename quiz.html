@@ -14,9 +14,15 @@
             max-width: 800px;
             margin: 0 auto;
         }
+        .question-skeleton {
+            background: #f0f0f0;
+            height: 20px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
         .question {
             margin-bottom: 30px;
-            font-size: 1.2em;
+            font-size: 1em;
             line-height: 1.8;
         }
         .blank {
@@ -49,9 +55,14 @@
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 1rem;
         }
         .option:hover {
             background: #e0e0e0;
+        }
+        .option:active { 
+            transform: scale(0.96); 
+            transition: transform .1s; 
         }
         .correct {
             background-color: #d4edda !important;
@@ -65,6 +76,8 @@
             text-align: center;
             margin-bottom: 20px;
             font-weight: bold;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         .payment-modal {
             display: none;
@@ -162,7 +175,7 @@
                         <img id="alipayLogo" src="images/alipaylogo.jpg" alt="支付宝">
                     </div>
                     <div class="payment-info">
-                        <div class="payment-name">支付宝</div>
+                        <div class="payment-name">支付宝</div><span style="background:#ff4d4f;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;margin-left:6px;">限时特惠</span>
                         <div class="payment-desc">推荐使用，安全快捷</div>
                     </div>
                     <div class="payment-selector selected" id="alipaySelector"></div>

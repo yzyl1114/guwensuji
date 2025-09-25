@@ -478,15 +478,15 @@ html { font-size: 16px; }
 }
 
 .custom-modal-body {
-    padding: 20px; /* 减少上下padding，因为内容多了 */
+    padding: 16px; /* 减少上下padding，因为内容多了 */
 }
 
 /* 支付方式样式 */
 .payment-method {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 15px;
+    margin-bottom: 12px;
+    padding: 10px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     background: #fafafa;
@@ -559,12 +559,12 @@ html { font-size: 16px; }
 
 .alipay-btn {
     width: 100%;
-    padding: 16px;
+    padding: 12px;
     background: linear-gradient(135deg, #1677ff 0%, #1890ff 100%);
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -640,4 +640,34 @@ html { font-size: 16px; }
         height: 40px;
         margin-right: 10px;
     }
+}
+
+.option.correct   { background:#52c41a; color:#fff; }
+.option.incorrect { background:#ff4d4f; color:#fff; }
+/* 0.3s 过渡避免闪变 */
+.option{ transition:background .3s,color .3s; }
+
+
+/* === 测试页移动端 === */
+@media (max-width: 768px) {
+  /* 1 题干挖空可换行 */
+  .blank { display: inline-flex; min-width: 80px; max-width: 100%; margin: 2px 4px; }
+  .blank input { width: 100%; font-size: 1rem; }
+
+  /* 2 选项整体靠下 + 上下并排 */
+  .options { 
+      margin-top: auto;              /* 吸底 */
+      flex-direction: column; 
+      gap: 8px; 
+      padding: 0 16px 24px;          /* 左右留空，下留安全区 */
+  }
+  /* 3 长选项自动断行 */
+  .option { 
+      width: 100%; 
+      white-space: normal;           /* 允许换行 */
+      text-align: center; 
+      padding: 12px 16px; 
+      font-size: 1rem; 
+      line-height: 1.4; 
+  }
 }
