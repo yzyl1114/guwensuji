@@ -338,6 +338,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function renderArticle(article) {
     const container = document.getElementById('article-content');
     
+    // 算平均行长（按换行分段，避免标题干扰）
+    const lines = article.content.split('\n').filter(l => l.trim());
+    const avgLen = lines.reduce((sum, l) => sum + l.length, 0) / lines.length;
+    const isPoem = avgLen <= 14;   // 14 字门槛可再调
+
     container.innerHTML = `
         <article class="article-detail">
             <div class="article-header">
@@ -348,8 +353,7 @@ function renderArticle(article) {
             <div class="pinyin-controls">
                 <button id="togglePinyin" class="pinyin-toggle-btn">隐藏拼音</button>
             </div>
-            
-            <div class="article-body hide-pinyin">
+            <div class="article-body hide-pinyin ${isPoem ? 'poem-mode' : ''}">
                 ${generatePinyinContent(article.content, article.pinyin)}
             </div>
         </article>
