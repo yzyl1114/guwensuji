@@ -351,7 +351,7 @@ function renderArticle(article) {
             </div>
             
             <div class="pinyin-controls">
-                <button id="togglePinyin" class="pinyin-toggle-btn">隐藏拼音</button>
+                <button id="togglePinyin" class="pinyin-toggle-btn">aria-pressed="false">显示拼音</button>
             </div>
             <div class="article-body hide-pinyin ${isPoem ? 'poem-mode' : ''}">
                 ${generatePinyinContent(article.content, article.pinyin)}
@@ -433,9 +433,12 @@ function setupPinyinToggle() {
     
     if (toggleBtn && articleBody) {
         toggleBtn.addEventListener('click', function() {
+        // 1. 先切换 class（hide-pinyin 存在表示“不显示”）
             articleBody.classList.toggle('hide-pinyin');
-            toggleBtn.textContent = articleBody.classList.contains('hide-pinyin') ? 
-                '显示拼音' : '隐藏拼音';
+            // 2. 根据切换后的状态写文案和 aria-pressed
+            const nowHide = articleBody.classList.contains('hide-pinyin');
+            toggleBtn.textContent      = nowHide ? '显示拼音' : '隐藏拼音';
+            toggleBtn.setAttribute('aria-pressed', nowHide ? 'false' : 'true');
         });
     }
 }
