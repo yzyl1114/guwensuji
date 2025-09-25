@@ -64,6 +64,9 @@ body {
     max-width: 1200px;
     margin: 2rem auto;
 }
+.container h1 { 
+    font-size: 1.5rem; 
+} 
 
 /* 首页网格布局 */
 .article-grid {
@@ -85,11 +88,14 @@ body {
 }
 .article-cover {
     width: 100%;
-    height: 180px;
+    height: 160px;
     object-fit: cover;
 }
 .article-content {
-    padding: 1.5rem;    
+    display: flex;               /* 标题+副标同一行 */
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1rem;    
 }
 
 .article-content a {
@@ -101,13 +107,19 @@ body {
     text-decoration: none;
     font-size: 1rem;
     color: #2c3e50;
+    white-space: nowrap;         /* 标题不换行 */
 }
 .article-content p {
+    margin: 0;
     color: #6c757d;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     text-decoration: none;
+    text-align: right;           /* 右侧对齐 */
+    flex-shrink: 0;   
 }
-
+.article-card a { 
+    text-decoration: none; 
+}
 /* 固定底部栏 */
 .fixed-footer {
     position: fixed;
@@ -239,6 +251,7 @@ html { font-size: 16px; }
 .article-container {
     max-width: 680px;
     margin: 0 auto;
+    min-height: 100vh;
     padding: 20px;
     padding-bottom: 70px; /* 为底部按钮留空间 */
 }
@@ -271,7 +284,7 @@ html { font-size: 16px; }
     background: white;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.875rem;
 }
 .pinyin-toggle-btn:hover {
     background: #f5f5f5;
@@ -294,7 +307,7 @@ html { font-size: 16px; }
 .pinyin-content {
     display: inline-block;
     text-align: center;
-    line-height: 2.2; /* 整体行高 */
+    line-height: 1.15; /* 整体行高 */
 }
 .char-container {
     display: inline-flex;
@@ -310,7 +323,7 @@ html { font-size: 16px; }
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    margin-bottom: -0.15em;
+    margin-bottom: -0.25em;
 }
 .chinese-char {
     font-size: 1em;
@@ -330,7 +343,6 @@ html { font-size: 16px; }
     font-size: 1em; /* 恢复字号 */
     margin-bottom: 0; /* 移除底部间距 */
     display: inline-block;
-    transform: translateX(0.15em) translateY(0.08em); /* 右下移一点 */
     vertical-align: bottom; /* 标点符号底部对齐 */
     line-height: 1; /* 确保行高正常 */
 }
@@ -642,8 +654,8 @@ html { font-size: 16px; }
     }
 }
 
-.option.correct   { background:#52c41a; color:#fff; }
-.option.incorrect { background:#ff4d4f; color:#fff; }
+.option.correct   { background:#52c41a; }
+.option.incorrect { background:#ff4d4f; }
 /* 0.3s 过渡避免闪变 */
 .option{ transition:background .3s,color .3s; }
 
@@ -670,4 +682,19 @@ html { font-size: 16px; }
       font-size: 1rem; 
       line-height: 1.4; 
   }
+}
+
+/* 默认桌面 / 大屏 */
+.article-body { font-size: 1rem; }   /* 16 px */
+
+/* ≤768 px 手机 / 小平板 */
+@media (max-width: 768px) {
+  .article-body { font-size: 0.875rem; }   /* 14 px，约降 12 % */
+  .pinyin-char  { font-size: 0.55em; }     /* 拼音同步缩，防止上下错位 */
+}
+@media (max-width: 375px) {
+  .article-body { font-size: 0.8125rem; }  /* 13 px */
+}
+@media (max-width: 768px) {
+  .article-body { line-height: 1.7; }   /* 桌面 1.8 → 手机 1.7 */
 }
