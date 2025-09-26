@@ -15,7 +15,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from base64 import b64encode, b64decode
-from config import ALIPAY_CONFIG, ALIPAY_GATEWAY, ALIPAY_RETURN_URL
+
+# 导入配置
+from config import ALIPAY_CONFIG, ALIPAY_GATEWAY, ALIPAY_RETURN_URL, current_config
 from alipay import AliPay
 from alipay.utils import AliPayConfig
 
@@ -28,6 +30,9 @@ app = Flask(__name__,
            template_folder=root_dir,    # 模板文件夹指向根目录
            static_folder=root_dir,      # 静态文件夹也指向根目录
            static_url_path='')          # 设置静态文件的URL路径为空
+
+# 应用配置
+app.config.from_object(current_config)
 
 # 手动设置静态文件路由
 @app.route('/css/<path:filename>')
@@ -46,15 +51,24 @@ def images_files(filename):
 init_db()
 
 # 初始化支付宝SDK
-alipay = AliPay(
-    appid=ALIPAY_CONFIG['appid'],
-    app_notify_url=ALIPAY_CONFIG['app_notify_url'],
-    app_private_key_string=ALIPAY_CONFIG['app_private_key_string'],
-    alipay_public_key_string=ALIPAY_CONFIG['alipay_public_key_string'],
-    sign_type=ALIPAY_CONFIG['sign_type'],
-    debug=ALIPAY_CONFIG['debug'],
-    config=AliPayConfig(timeout=15)  # 超时时间
-)
+def create_alipay_client():
+    """创建支付宝客户端"""
+    try:
+        return AliPay(
+            appid=ALIPAY_CONFIG['appid'],
+            app_notify_url=ALIPAY_CONFIG['app_notify_url'],
+            app_private_key_string=ALIPAY_CONFIG['app_private_key_string'],
+            alipay_public_key_string=ALIPAY_CONFIG['alipay_public_key_string'],
+            sign_type=ALIPAY_CONFIG['sign_type'],
+            debug=ALIPAY_CONFIG['debug'],
+            config=AliPayConfig(timeout=15)  # 超时时间
+        )
+    except Exception as e:
+        print(f"初始化支付宝客户端失败: {str(e)}")
+        # 返回一个None或者基本的客户端，根据实际情况处理
+        return None
+
+alipay = create_alipay_client()
 
 @app.route('/')
 def index():
@@ -69,8 +83,8 @@ def article():
 def quiz():
     return render_template('quiz.html')
 
-@app.route('/payment/success')
-def payment_success():
+@app.route('/api/payment/success')
+def api_payment_success():
     # 从URL参数中获取支付宝返回的数据
     out_trade_no = request.args.get('out_trade_no')
     trade_no = request.args.get('trade_no')
@@ -271,6 +285,10 @@ def create_order():
     try:
         print("收到创建订单请求")
         
+        # 检查支付宝客户端是否初始化成功
+        if alipay is None:
+            return jsonify({'success': False, 'message': '支付系统初始化失败，请联系管理员'})
+        
         # 生成商户订单号，确保唯一性
         out_trade_no = f"ORDER{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:6]}"
         print(f"生成的订单号: {out_trade_no}")
@@ -307,8 +325,8 @@ def create_order():
         traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)})
 
-@app.route('/payment/callback', methods=['POST'])
-def payment_callback():
+@app.route('/api/payment/callback', methods=['POST'])
+def api_payment_callback():
     """支付宝异步通知回调（重要！）"""
     try:
         # 记录回调请求
@@ -442,6 +460,11 @@ def app_gateway():
     # 现阶段可以简单返回success
     return 'success'
 
+@app.route('/health')
+def health_check():
+    """健康检查端点"""
+    return jsonify({'status': 'healthy', 'environment': current_config.ENV})
+
 @app.errorhandler(404)
 def not_found(error):
     return render_template('404.html'), 404
@@ -451,4 +474,10 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # 根据环境选择运行配置
+    if current_config.ENV == 'production':
+        # 生产环境使用更安全的配置
+        app.run(debug=False, host='0.0.0.0', port=5000)
+    else:
+        # 开发环境
+        app.run(debug=True, host='0.0.0.0', port=5001)
