@@ -249,10 +249,11 @@ html { font-size: 16px; }
 /* ===== 文章详情页专用 ===== */
 /* 居中布局容器 */
 .article-container {
-    max-width: 680px;
+    max-width: 820px;
     margin: 0 auto;
     min-height: 100vh;
-    padding: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
     padding-bottom: 70px; /* 为底部按钮留空间 */
 }
 
@@ -279,15 +280,15 @@ html { font-size: 16px; }
     margin: 20px 0;
 }
 .pinyin-toggle-btn {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 4px;
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 0;
     cursor: pointer;
     font-size: 0.875rem;
 }
 .pinyin-toggle-btn:hover {
-    background: #f5f5f5;
+    background: rgba(24,144,255,.06);;
 }
 
 /* 内容排版 */
@@ -298,6 +299,15 @@ html { font-size: 16px; }
     text-align: justify;
     text-align-last: left;
 }
+/* 段与段之间再补 0.8 em */
+.article-body p + p { margin-top: 0.8em; }
+
+/* 有拼音时*/
+.article-body.show-pinyin {
+    line-height: 2.2; /* 再升高 0.4，字与拼音不挤 */
+    font-size: 1.05rem; /* 整体大 5 %，手机已单独降过 */
+}
+
 .poem-mode { 
     text-align:center; 
     text-align-last:center; 
