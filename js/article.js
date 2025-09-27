@@ -29,17 +29,17 @@ const articles = {
         title: "黄鹤楼诗三首",
         author: "唐 · 崔颢 李白",
         location: "湖北武汉黄鹤楼", 
-        content: `黄鹤楼(崔颢)
+        content: `黄鹤楼 崔颢
 昔人已乘黄鹤去，此地空余黄鹤楼。
 黄鹤一去不复返，白云千载空悠悠。
 晴川历历汉阳树，芳草萋萋鹦鹉洲。
 日暮乡关何处是？烟波江上使人愁。
 
-黄鹤楼送孟浩然之广陵(李白)
+黄鹤楼送孟浩然之广陵 李白
 故人西辞黄鹤楼，烟花三月下扬州。
 孤帆远影碧空尽。惟见长江天际流。
 
-与史郎中钦听黄鹤楼上吹笛(李白)
+与史郎中钦听黄鹤楼上吹笛 李白
 一为迁客去长沙，西望长安不见家。
 黄鹤楼中吹玉笛，江城五月落梅花。`,
         pinyin: `huáng hè lóu cuī hào xī rén yǐ chéng huáng hè qù cǐ dì kōng yú huáng hè lóu huáng hè yī qù bù fù fǎn bái yún qiān zǎi kōng yōu yōu qíng chuān lì lì hàn yáng shù fāng cǎo qī qī yīng wǔ zhōu rì mù xiāng guān hé chù shì yān bō jiāng shàng shǐ rén chóu huáng hè lóu sòng mèng hào rán zhī guǎng líng lǐ bái gù rén xī cí huáng hè lóu yān huā sān yuè xià yáng zhōu gū fān yuǎn yǐng bì kōng jìn wéi jiàn cháng jiāng tiān jì liú yǔ shǐ láng zhōng qīn tīng huáng hè lóu shàng chuī yù dí lǐ bái yī wéi qiān kè qù cháng shā xī wàng cháng ān bù jiàn jiā huáng hè lóu zhōng chuī yù dí jiāng chéng wǔ yuè luò méi huā`
