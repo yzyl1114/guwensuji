@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const articleId = getQueryParam('id') || 1;
     
     // 配置参数
-    const freeQuestionCount = 5;
+    const freeQuestionCount = 3;
     const paidQuestionCount = 10;
     let currentQuestionIndex = 0;
     let allQuestions = [];
