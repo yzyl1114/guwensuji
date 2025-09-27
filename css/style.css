@@ -198,6 +198,9 @@ html { font-size: 16px; }
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
 }
+
+.modal.show { display: flex; }   /* JS 一点才出现 */
+
 .modal-content {
     background-color: #fff;
     margin: 15% auto;
