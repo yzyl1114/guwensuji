@@ -293,22 +293,41 @@ def create_order():
         out_trade_no = f"ORDER{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:6]}"
         print(f"生成的订单号: {out_trade_no}")
 
-        # 创建支付订单
-        order_string = alipay.api_alipay_trade_wap_pay(
-            out_trade_no=out_trade_no,          # 商户订单号
-            total_amount="1.00",                # 支付金额（单位：元）
-            subject="古文速记 - 永久会员",       # 订单标题
-            return_url=ALIPAY_RETURN_URL,       # 前端跳转地址
-            notify_url=ALIPAY_CONFIG['app_notify_url']  # 异步通知地址
-        )
+        # 获取用户代理信息，判断设备类型
+        user_agent = request.headers.get('User-Agent', '').lower()
+        is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone'])
+        
+        # 根据设备类型优化支付参数
+        if is_mobile:
+            # 手机网站支付 - 优化移动端体验
+            order_string = alipay.api_alipay_trade_wap_pay(
+                out_trade_no=out_trade_no,
+                total_amount="1.00",
+                subject="古文速记 - 永久会员", 
+                return_url=ALIPAY_RETURN_URL,
+                notify_url=ALIPAY_CONFIG['app_notify_url'],
+                quit_url=ALIPAY_RETURN_URL,  # 用户中途退出返回地址
+                product_code="QUICK_WAP_WAY"  # 手机网站支付产品码
+            )
+            print("使用手机网站支付接口")
+        else:
+            # PC网站支付
+            order_string = alipay.api_alipay_trade_page_pay(
+                out_trade_no=out_trade_no,
+                total_amount="1.00",
+                subject="古文速记 - 永久会员",
+                return_url=ALIPAY_RETURN_URL,
+                notify_url=ALIPAY_CONFIG['app_notify_url']
+            )
+            print("使用PC网站支付接口")
         
         print(f"生成的订单字符串: {order_string}")
 
         # 将订单信息存入数据库
         conn = get_db_connection()
         conn.execute(
-            'INSERT INTO orders (out_trade_no, total_amount, trade_status) VALUES (?, ?, ?)',
-            (out_trade_no, "1.00", "WAIT_BUYER_PAY")
+            'INSERT INTO orders (out_trade_no, total_amount, trade_status, device_type) VALUES (?, ?, ?, ?)',
+            (out_trade_no, "1.00", "WAIT_BUYER_PAY", "mobile" if is_mobile else "pc")
         )
         conn.commit()
         conn.close()
@@ -317,7 +336,11 @@ def create_order():
         pay_url = ALIPAY_GATEWAY + "?" + order_string
         print(f"完整的支付URL: {pay_url}")
         
-        return jsonify({'success': True, 'pay_url': pay_url})
+        return jsonify({
+            'success': True, 
+            'pay_url': pay_url,
+            'is_mobile': is_mobile  # 返回设备类型给前端
+        })
         
     except Exception as e:
         print(f"创建订单异常: {str(e)}")

@@ -68,23 +68,41 @@ document.addEventListener('DOMContentLoaded', function() {
             alipayBtn.disabled = true;
         }
         
-        // 保存当前文章ID到支付数据中
+        // 检测是否为移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // 支付数据
         const paymentData = {
-            article_id: articleId
+            article_id: articleId,
+            is_mobile: isMobile  // 告诉后端设备类型
         };
 
-        // 修正：在fetch中传递paymentData
+        // 发送支付请求
         fetch('/api/create_order', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(paymentData) // 添加这行
+            body: JSON.stringify(paymentData)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = data.pay_url;
+                console.log('支付创建成功，设备类型:', data.is_mobile ? '移动端' : 'PC端');
+                
+                // 移动端特殊处理
+                if (data.is_mobile) {
+                    // 方法1: 直接跳转（推荐）
+                    window.location.href = data.pay_url;
+                    
+                    // 方法2: 备用方案 - 在新窗口打开
+                    setTimeout(() => {
+                        window.open(data.pay_url, '_blank');
+                    }, 500);
+                } else {
+                    // PC端直接跳转
+                    window.location.href = data.pay_url;
+                }
             } else {
                 alert('创建订单失败: ' + (data.message || '未知错误'));
                 resetPaymentButton();
@@ -96,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resetPaymentButton();
         });
     }
+
 
     // 恢复支付按钮状态
     function resetPaymentButton() {
