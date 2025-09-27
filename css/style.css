@@ -189,7 +189,7 @@ html { font-size: 16px; }
 
 /* 模态框样式 */
 .modal {
-    display: none;
+    display: none !important;   /* 强制隐藏 */
     position: fixed;
     z-index: 100;
     left: 0;
@@ -199,7 +199,11 @@ html { font-size: 16px; }
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.modal.show { display: flex; }   /* JS 一点才出现 */
+.modal.show { 
+    display: flexflex !important;
+    align-items: center;
+    justify-content: center;
+}   /* JS 一点才出现 */
 
 .modal-content {
     background-color: #fff;
@@ -713,12 +717,6 @@ html { font-size: 16px; }
 }
 
 /* ===== 恢复权限弹窗 - 重置版 ===== */
-#licenseModal.modal {                    /* 只作用恢复权限窗 */
-    display: flex;                        /* 让内容垂直+水平居中 */
-    align-items: center;
-    justify-content: center;
-}
-
 #licenseModal .modal-content {
     position: relative;
     width: 90%;
