@@ -187,14 +187,19 @@
 
     <!-- 恢复权限弹窗 (暂时隐藏) -->
     <div id="licenseModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>恢复权限</h2>
-            <p>请输入您的永久授权码</p>
-            <input type="text" id="licenseKeyInput" placeholder="例如：A5b-2C8-D">
-            <button id="restoreLicenseBtn">恢复</button>
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-header">
+        <h2>恢复权限</h2>
+        <p>请输入您的永久授权码</p>
+        </div>
+        <div class="modal-body">
+        <input type="text" id="licenseKeyInput" placeholder="例如：A5b2C8D">
+        <button id="restoreLicenseBtn">恢复</button>
         </div>
     </div>
+</div>
+
 
     <script src="js/main.js"></script>
 </body>

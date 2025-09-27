@@ -708,3 +708,92 @@ html { font-size: 16px; }
 @media (max-width: 768px) {
   .article-body { line-height: 1.7; }   /* 桌面 1.8 → 手机 1.7 */
 }
+
+/* ===== 恢复权限弹窗 - 重置版 ===== */
+#licenseModal.modal {                    /* 只作用恢复权限窗 */
+    display: flex;                        /* 让内容垂直+水平居中 */
+    align-items: center;
+    justify-content: center;
+}
+
+#licenseModal .modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 360px;                    /* 1. 宽度压到 360 → 手机不撑满 */
+    min-height: 320px;                   /* 1. 最低高度 → 不再扁盒 */
+    padding: 40px 32px 32px;             /* 整体内边距，上多 8px 留空给关闭钮 */
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    text-align: center;                  /* 2. 内部全部居中 */
+}
+
+/* 5. 关闭按钮 - 右上角 + 缩小 */
+#licenseModal .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 20px;
+    line-height: 28px;
+    color: #999;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all .2s;
+}
+#licenseModal .close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* 4. 上、下两区视觉分隔 */
+#licenseModal .modal-header {            /* 标题区 */
+    margin-bottom: 24px;                 /* 与主题区拉开距离 */
+}
+#licenseModal .modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+#licenseModal .modal-header p {          /* 副标题 */
+    font-size: .875rem;
+    color: #666;
+    margin: 0;
+}
+
+/* 3. 主题区 - 输入框拉高 + 按钮独占一行 */
+#licenseModal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;                           /* 输入⇄按钮间距 */
+}
+#licenseModal input[type="text"] {
+    width: 100%;
+    height: 48px;                        /* 拉高输入框 */
+    padding: 0 16px;
+    font-size: 1rem;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    transition: border-color .2s;
+}
+#licenseModal input[type="text"]:focus {
+    border-color: #1890ff;
+    outline: none;
+}
+#licenseModal button {                  /* 按钮独占下方 */
+    width: 100%;
+    height: 44px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+    background: #1890ff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .2s;
+}
+#licenseModal button:hover {
+    background: #40a9ff;
+}
