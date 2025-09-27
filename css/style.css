@@ -120,6 +120,27 @@ body {
 .article-card a { 
     text-decoration: none; 
 }
+
+/* 更新提示卡片 - 高度 = 普通卡片一半 */
+.update-hint {
+  grid-column: 1 / -1;                 /* 占满整行 */
+  height: 80px;                        /* 160÷2 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}
+.update-hint .article-content {
+  padding: 0;
+}
+.update-hint p {
+  font-size: 0.75rem;                  /* 与副标题同阶 */
+  color: #999;
+  margin: 0;
+}
+
 /* 固定底部栏 */
 .fixed-footer {
     position: fixed;
