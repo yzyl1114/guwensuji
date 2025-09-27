@@ -129,6 +129,15 @@ body {
   justify-content: center;
   padding: 0;
 }
+
+.update-hint .article-cover {
+  background: #fff;          /* 纯白色 */
+  height: 160px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .update-hint p {
   font-size: 0.75rem;           /* 与副标题同阶 */
   color: #999;
