@@ -351,7 +351,7 @@ function renderArticle(article) {
             </div>
             
             <div class="pinyin-controls">
-                <button id="togglePinyin" class="pinyin-toggle-btn">aria-pressed="false">显示拼音</button>
+                <button id="togglePinyin" class="pinyin-toggle-btn">显示拼音</button>
             </div>
             <div class="article-body hide-pinyin ${isPoem ? 'poem-mode' : ''}">
                 ${generatePinyinContent(article.content, article.pinyin)}

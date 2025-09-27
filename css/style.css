@@ -289,29 +289,34 @@ html { font-size: 16px; }
 .pinyin-toggle-btn {
     padding: 4px 8px;
     border: none;
-    background: transparent;
+    background: #fff;
     border-radius: 0;
     cursor: pointer;
     font-size: 0.875rem;
+    color: #1890ff;
 }
 .pinyin-toggle-btn:hover {
     background: rgba(24,144,255,.06);;
 }
 
+.pinyin-toggle-btn:active {
+    transform: scale(.96);
+}
+
 /* 内容排版 */
 .article-body {
-    line-height: 1.8; /* 增大行高以容纳拼音 */
+    line-height: 2; /* 增大行高以容纳拼音 */
     font-size: 1em;
-    margin: 30px 0;
+    margin: 40px 0;
     text-align: justify;
     text-align-last: left;
 }
-/* 段与段之间再补 0.8 em */
-.article-body p + p { margin-top: 0.8em; }
+/* 段与段之间再补 1 em */
+.article-body p + p { margin-top: 1em; }
 
 /* 有拼音时*/
 .article-body.show-pinyin {
-    line-height: 2.2; /* 再升高 0.4，字与拼音不挤 */
+    line-height: 2.4; /* 再升高 0.4，字与拼音不挤 */
     font-size: 1.05rem; /* 整体大 5 %，手机已单独降过 */
 }
 
@@ -334,7 +339,7 @@ html { font-size: 16px; }
     vertical-align: bottom;
 }
 .pinyin-char {
-    font-size: 0.6em;
+    font-size: 0.75em;
     color: #7d8e95;
     height: 0.9em;
     display: flex;
