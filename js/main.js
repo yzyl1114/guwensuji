@@ -11,28 +11,19 @@ function generateFingerprint() {
 }
 
 // 模态框通用逻辑
-function setupModal(modalId, openBtnId, closeBtnClass) {
-    const modal = document.getElementById(modalId);
-    const openBtn = document.getElementById(openBtnId);
-    const closeBtn = modal.querySelector(closeBtnClass);
+function setupModal(modalId, triggerBtnSel, closeBtnSel) {
+  const modal   = document.getElementById(modalId);
+  const openBtn = document.getElementById(triggerBtnSel);
+  const closeBtn= modal.querySelector(closeBtnSel);
 
-    if (openBtn) {
-        openBtn.onclick = function() {
-            modal.style.display = "block";
-        }
-    }
+  /* 点击右上角：仅加 .show */
+  openBtn.addEventListener('click', () => modal.classList.add('show'));
 
-    if (closeBtn) {
-        closeBtn.onclick = function() {
-            modal.style.display = "none";
-        }
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
+  /* 关闭：点 × 或蒙层 */
+  closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.classList.remove('show');
+  });
 }
 
 // 验证授权码函数
