@@ -1,3 +1,31 @@
+// 添加防复制事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 防止右键菜单
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    // 防止键盘复制
+    document.addEventListener('keydown', function(e) {
+        // 阻止Ctrl+C, Ctrl+A, Ctrl+U, F12等
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // 防止拖拽
+    document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // 检查付费状态
     let isPaidUser = localStorage.getItem('isPaidUser') === 'true';
@@ -732,39 +760,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         ];
     }
-    
-    // 生成滕王阁序测试题目（优化版）
-    /*滕王阁序测试题下线
-    function generateTengwanggeQuestions() {
-        const fullText = getArticleContent(1);
-        
-        if (!fullText) {
-            return generateBasicQuestions("");
-        }
-        
-        const questionStructures = [
-            { before: '豫章', after: '，洪都新府。', answer: '故郡' },
-            { before: '星分翼轸，', after: '。', answer: '地接衡庐' },
-            { before: '襟三江而带五湖，', after: '。', answer: '控蛮荆而引瓯越' },
-            { before: '物华天宝，', after: '；人杰地灵，徐孺下陈蕃之榻。', answer: '龙光射牛斗之墟' },
-            { before: '雄州雾列，', after: '。', answer: '俊采星驰' }
-        ];
-        
-        return questionStructures.map((structure, index) => ({
-            text: [
-                {type: 'text', content: structure.before},
-                {type: 'blank', id: index, answer: structure.answer},
-                {type: 'text', content: structure.after}
-            ],
-            options: generateSmartOptions(structure.answer, fullText),
-            answer: structure.answer,
-            isSmartGenerated: false
-        }));
-    }
-    */
+
     // 获取URL参数
     function getQueryParam(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
     }
 });
+
+//添加环境检查和代码混淆保护
+(function() {
+    'use strict';
+    
+    // 检查是否在正确域名下运行
+    const allowedDomains = [
+        'guwensuji.com', 'www.guwensuji.com','guwensuji.com:8443','yzyl1114.github.io'
+    ];
+    const currentDomain = window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+    
+    if (!allowedDomains.includes(currentDomain)) {
+        console.error('非法域名访问:', currentDomain);
+        window.location.href = 'https://guwensuji.com';
+        return;
+    }
+
+       // 代码完整性检查
+    const originalFunctions = {
+        generateBasicQuestions: generateBasicQuestions.toString(),
+        checkAnswer: checkAnswer.toString()
+    };
+    
+    // 定期检查关键函数是否被修改
+    setInterval(function() {
+        if (generateBasicQuestions.toString() !== originalFunctions.generateBasicQuestions ||
+            checkAnswer.toString() !== originalFunctions.checkAnswer) {
+            console.error('检测到代码篡改');
+            window.location.reload();
+        }
+    }, 5000);
+    
+})();

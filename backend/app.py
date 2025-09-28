@@ -504,3 +504,23 @@ if __name__ == '__main__':
     else:
         # 开发环境
         app.run(debug=True, host='0.0.0.0', port=5001)
+
+#图片资源防盗链
+@app.route('/images/<path:filename>')
+def images_files(filename):
+    """图片资源路由，添加防盗链"""
+    referer = request.headers.get('Referer', '')
+    allowed_domains = [
+        'guwensuji.com', 
+        'www.guwensuji.com',
+        'guwensuji.com:8443',
+        'yzyl1114.github.io'
+    ]
+    
+    # 检查Referer，如果不是来自允许的域名，返回错误图片
+    if referer and not any(domain in referer for domain in allowed_domains):
+        print(f"图片盗链尝试: {filename} from {referer}")
+        # 返回一个错误图片或空白图片
+        return send_from_directory(os.path.join(root_dir, 'images'), 'blocked.png')
+    
+    return send_from_directory(os.path.join(root_dir, 'images'), filename)
