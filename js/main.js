@@ -177,7 +177,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 新增：设置会员购买功能
 function setupMemberPurchase() {
+    console.log('设置会员购买功能');
     const purchaseLink = document.getElementById('purchaseMemberLink');
+    console.log('购买链接元素:', purchaseLink);
     const customModal = document.getElementById('customPaymentModal');
     const customCloseBtn = document.getElementById('customClosePayment');
     const alipaySelector = document.getElementById('alipaySelector');
