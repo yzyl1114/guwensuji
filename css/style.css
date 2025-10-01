@@ -40,24 +40,45 @@ body {
     height: 60px;
 }
 
-/* 导航栏右侧链接容器 */
-.nav-container > a:not(.logo) {
-    margin-left: 20px; /* 确保链接之间有间距 */
+/* 新增：导航链接容器 */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* 使用相对单位，间距会随字体大小变化 */
 }
 
-/* 或者更具体地针对两个链接 */
-#purchaseMemberLink, 
-#restoreLicenseLink {
-    margin-left: 20px;
+/* 导航链接样式 */
+.nav-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+    white-space: nowrap; /* 防止文字换行 */
 }
 
-/* 确保两个链接紧挨着 */
-#purchaseMemberLink {
-    margin-right: 0; /* 移除右边距，让它紧贴恢复权限链接 */
+.nav-link:hover {
+    color: #007bff;
 }
 
-#restoreLicenseLink {
-    margin-left: 10px; /* 减小左边距，让它紧贴购买链接 */
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 0.75rem; /* 在小屏幕上减小间距 */
+    }
+    
+    .nav-link {
+        font-size: 0.9rem; /* 在小屏幕上减小字体 */
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-links {
+        gap: 0.5rem; /* 在非常小的屏幕上进一步减小间距 */
+    }
+    
+    .nav-link {
+        font-size: 0.85rem; /* 在非常小的屏幕上进一步减小字体 */
+    }
 }
 
 .site-logo { 
