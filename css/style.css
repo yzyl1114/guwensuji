@@ -42,22 +42,22 @@ body {
 
 /* 导航栏右侧链接容器 */
 .nav-container > a:not(.logo) {
-    margin-left: 15px; /* 确保链接之间有间距 */
+    margin-left: 20px; /* 确保链接之间有间距 */
 }
 
 /* 或者更具体地针对两个链接 */
 #purchaseMemberLink, 
 #restoreLicenseLink {
-    margin-left: 0px;
+    margin-left: 20px;
 }
 
 /* 确保两个链接紧挨着 */
 #purchaseMemberLink {
-    margin-right: 8; /* 移除右边距，让它紧贴恢复权限链接 */
+    margin-right: 0; /* 移除右边距，让它紧贴恢复权限链接 */
 }
 
 #restoreLicenseLink {
-    margin-left: 8px; /* 减小左边距，让它紧贴购买链接 */
+    margin-left: 10px; /* 减小左边距，让它紧贴购买链接 */
 }
 
 .site-logo { 
