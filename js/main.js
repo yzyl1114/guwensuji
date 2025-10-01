@@ -164,6 +164,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置权限恢复功能
     setupLicenseRestoration();
+
+    // 设置会员购买功能
+    setupMemberPurchase();
     
     // 检查并更新付费状态
     checkAccessStatus();
