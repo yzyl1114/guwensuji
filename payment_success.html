@@ -81,19 +81,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 标记为付费用户
             localStorage.setItem('isPaidUser', 'true');
+            // 从URL获取支付来源
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromParam = urlParams.get('from');
             
             // 处理继续学习按钮点击
-            document.getElementById('continueLearning').addEventListener('click', function() {
-                // 获取原文章ID（如果有的话）
-                const urlParams = new URLSearchParams(window.location.search);
-                const articleId = urlParams.get('article_id') || '1';
-                
-                // 跳转回测试页面，并带上标识参数
-                window.location.href = '/quiz.html?id=' + articleId + '&from=payment_success';
-            });
+            const continueLearningBtn = document.getElementById('continueLearning');
+            
+            if (fromParam === 'nav') {
+                // 从导航栏购买入口支付，按钮改为"返回首页"
+                continueLearningBtn.textContent = '返回首页';
+                continueLearningBtn.addEventListener('click', function() {
+                    window.location.href = '/';
+                });
+            } else {
+                // 默认从测试页支付，按钮为"返回测试"
+                continueLearningBtn.textContent = '返回测试';
+                continueLearningBtn.addEventListener('click', function() {
+                    // 获取原文章ID（如果有的话）
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const articleId = urlParams.get('article_id') || '1';
+                    
+                    // 跳转回测试页面，并带上标识参数
+                    window.location.href = '/quiz.html?id=' + articleId + '&from=payment_success';
+                });
+            }
             
             // 从URL获取订单号
-            const urlParams = new URLSearchParams(window.location.search);
             const outTradeNo = urlParams.get('out_trade_no');
             
             // 如果有订单号，尝试从后端获取真实的授权码

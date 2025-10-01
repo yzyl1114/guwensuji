@@ -173,3 +173,131 @@ document.addEventListener('DOMContentLoaded', function() {
         saveLicenseKeyFromURL();
     }
 });
+
+
+// 新增：设置会员购买功能
+function setupMemberPurchase() {
+    const purchaseLink = document.getElementById('purchaseMemberLink');
+    const customModal = document.getElementById('customPaymentModal');
+    const customCloseBtn = document.getElementById('customClosePayment');
+    const alipaySelector = document.getElementById('alipaySelector');
+    const customAlipayBtn = document.getElementById('customAlipayBtn');
+
+    // 支付方式选择逻辑
+    if (alipaySelector) {
+        alipaySelector.addEventListener('click', function() {
+            const isSelected = alipaySelector.classList.contains('selected');
+            
+            if (isSelected) {
+                alipaySelector.classList.remove('selected');
+                if (customAlipayBtn) customAlipayBtn.disabled = true;
+            } else {
+                alipaySelector.classList.add('selected');
+                if (customAlipayBtn) customAlipayBtn.disabled = false;
+            }
+        });
+    }
+
+    // 支付宝支付按钮点击事件
+    if (customAlipayBtn) {
+        customAlipayBtn.addEventListener('click', function() {
+            processAlipayPaymentFromNav();
+        });
+    }
+    
+    // 关闭按钮事件
+    if (customCloseBtn) {
+        customCloseBtn.addEventListener('click', function() {
+            if (customModal) {
+                customModal.style.display = 'none';
+            }
+        });
+    }
+    
+    // 点击弹窗外部关闭
+    if (customModal) {
+        customModal.addEventListener('click', function(event) {
+            if (event.target === customModal) {
+                customModal.style.display = 'none';
+            }
+        });
+    }
+
+    // 购买链接点击事件
+    if (purchaseLink) {
+        purchaseLink.addEventListener('click', function() {
+            if (customModal) {
+                customModal.style.display = 'flex';
+            }
+        });
+    }
+}
+
+// 新增：从导航栏发起的支付宝支付处理
+function processAlipayPaymentFromNav() {
+    const customAlipayBtn = document.getElementById('customAlipayBtn');
+    
+    // 如果按钮被禁用，则不处理
+    if (customAlipayBtn && customAlipayBtn.disabled) {
+        return;
+    }    
+    
+    // 显示支付中状态
+    if (customAlipayBtn) {
+        customAlipayBtn.innerHTML = '<span>支付处理中...</span>';
+        customAlipayBtn.disabled = true;
+    }
+    
+    // 检测是否为移动设备
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // 支付数据 - 添加来源标识
+    const paymentData = {
+        from: 'nav', // 标识从导航栏购买入口发起
+        is_mobile: isMobile
+    };
+
+    // 发送支付请求
+    fetch('/api/create_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('支付创建成功，来源: 导航栏, 设备类型:', data.is_mobile ? '移动端' : 'PC端');
+            
+            // 移动端特殊处理
+            if (data.is_mobile) {
+                window.location.href = data.pay_url;
+                setTimeout(() => {
+                    window.open(data.pay_url, '_blank');
+                }, 500);
+            } else {
+                // PC端直接跳转
+                window.location.href = data.pay_url;
+            }
+        } else {
+            alert('创建订单失败: ' + (data.message || '未知错误'));
+            resetPaymentButtonInNav();
+        }
+    })
+    .catch(error => {
+        console.error('支付请求错误:', error);
+        alert('网络错误，请稍后重试');
+        resetPaymentButtonInNav();
+    });
+}
+
+// 新增：恢复导航栏支付按钮状态
+function resetPaymentButtonInNav() {
+    const alipayBtn = document.getElementById('customAlipayBtn');
+    const alipaySelector = document.getElementById('alipaySelector');
+    if (alipayBtn) {
+        alipayBtn.innerHTML = '<span class="price">¥1.0</span><span class="btn-text">立即购买</span>';
+        alipayBtn.disabled = !alipaySelector.classList.contains('selected');
+    }
+}

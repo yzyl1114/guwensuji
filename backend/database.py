@@ -7,7 +7,7 @@ def init_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
-    # 创建订单表
+    # 创建订单表 - 添加 payment_from 和 article_id 字段
     c.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +17,10 @@ def init_db():
             trade_status TEXT DEFAULT 'WAIT_BUYER_PAY',
             user_id INTEGER DEFAULT 0,
             create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            payment_from TEXT DEFAULT 'test',  -- 新增：支付来源 (test/nav)
+            article_id TEXT DEFAULT '1',       -- 新增：文章ID
+            device_type TEXT                   -- 新增：设备类型 (pc/mobile)
         )
     ''')
     

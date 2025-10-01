@@ -402,6 +402,13 @@ def create_order():
         if alipay is None:
             return jsonify({'success': False, 'message': '支付系统初始化失败，请联系管理员'})
         
+        # 获取请求数据
+        request_data = request.get_json()
+        payment_from = request_data.get('from', 'test')  # 默认为test（测试页）
+        article_id = request_data.get('article_id', '1')  # 保留原有的article_id
+        
+        print(f"支付来源: {payment_from}, 文章ID: {article_id}")
+        
         # 生成商户订单号，确保唯一性
         out_trade_no = f"ORDER{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:6]}"
         print(f"生成的订单号: {out_trade_no}")
@@ -410,6 +417,14 @@ def create_order():
         user_agent = request.headers.get('User-Agent', '').lower()
         is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone'])
         
+        # 构建支付成功返回URL，添加来源参数
+        return_url_with_params = f"{ALIPAY_RETURN_URL}?from={payment_from}"
+        if payment_from == 'test':
+            # 如果是测试页支付，还要传递文章ID
+            return_url_with_params += f"&article_id={article_id}"
+        
+        print(f"支付成功返回URL: {return_url_with_params}")
+        
         # 根据设备类型优化支付参数
         if is_mobile:
             # 手机网站支付 - 优化移动端体验
@@ -417,9 +432,9 @@ def create_order():
                 out_trade_no=out_trade_no,
                 total_amount="1.00",
                 subject="古文速记 - 永久会员", 
-                return_url=ALIPAY_RETURN_URL,
+                return_url=return_url_with_params,  # 使用带参数的返回URL
                 notify_url=ALIPAY_CONFIG['app_notify_url'],
-                quit_url=ALIPAY_RETURN_URL,  # 用户中途退出返回地址
+                quit_url=return_url_with_params,  # 用户中途退出返回地址，同样带参数
                 product_code="QUICK_WAP_WAY"  # 手机网站支付产品码
             )
             print("使用手机网站支付接口")
@@ -429,18 +444,18 @@ def create_order():
                 out_trade_no=out_trade_no,
                 total_amount="1.00",
                 subject="古文速记 - 永久会员",
-                return_url=ALIPAY_RETURN_URL,
+                return_url=return_url_with_params,  # 使用带参数的返回URL
                 notify_url=ALIPAY_CONFIG['app_notify_url']
             )
             print("使用PC网站支付接口")
         
         print(f"生成的订单字符串: {order_string}")
 
-        # 将订单信息存入数据库
+        # 将订单信息存入数据库（包括支付来源）
         conn = get_db_connection()
         conn.execute(
-            'INSERT INTO orders (out_trade_no, total_amount, trade_status, device_type) VALUES (?, ?, ?, ?)',
-            (out_trade_no, "1.00", "WAIT_BUYER_PAY", "mobile" if is_mobile else "pc")
+            'INSERT INTO orders (out_trade_no, total_amount, trade_status, device_type, payment_from, article_id) VALUES (?, ?, ?, ?, ?, ?)',
+            (out_trade_no, "1.00", "WAIT_BUYER_PAY", "mobile" if is_mobile else "pc", payment_from, article_id)
         )
         conn.commit()
         conn.close()
@@ -452,7 +467,8 @@ def create_order():
         return jsonify({
             'success': True, 
             'pay_url': pay_url,
-            'is_mobile': is_mobile  # 返回设备类型给前端
+            'is_mobile': is_mobile,  # 返回设备类型给前端
+            'payment_from': payment_from  # 返回支付来源给前端（可选）
         })
         
     except Exception as e:

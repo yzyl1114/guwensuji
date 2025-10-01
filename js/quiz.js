@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 支付数据
         const paymentData = {
             article_id: articleId,
+            from: 'test', // 标识从测试页发起支付
             is_mobile: isMobile  // 告诉后端设备类型
         };
 
