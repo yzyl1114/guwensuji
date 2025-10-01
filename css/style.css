@@ -22,6 +22,10 @@ body {
 /* 导航栏样式 */
 .navbar {
     background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
     border-bottom: 1px solid #e9ecef;
     padding: 1.25rem 0.25rem;
 }
@@ -32,7 +36,30 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 20px;
+    height: 60px;
 }
+
+/* 导航栏右侧链接容器 */
+.nav-container > a:not(.logo) {
+    margin-left: 15px; /* 确保链接之间有间距 */
+}
+
+/* 或者更具体地针对两个链接 */
+#purchaseMemberLink, 
+#restoreLicenseLink {
+    margin-left: 0px;
+}
+
+/* 确保两个链接紧挨着 */
+#purchaseMemberLink {
+    margin-right: 8; /* 移除右边距，让它紧贴恢复权限链接 */
+}
+
+#restoreLicenseLink {
+    margin-left: 8px; /* 减小左边距，让它紧贴购买链接 */
+}
+
 .site-logo { 
     width:32px; 
     height:32px; 
