@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import sqlite3
-from flask import Flask, request, jsonify, render_template, url_for, send_from_directory
+from flask import Flask, request, jsonify, render_template, url_for, send_from_directory, redirect  # 添加redirect
 from database import init_db, get_db_connection
 import json
 import time
@@ -34,6 +34,102 @@ app = Flask(__name__,
 # 应用配置
 app.config.from_object(current_config)
 
+# ============ 在这里添加防盗功能 ============
+def require_domain(f):
+    """域名检查装饰器"""
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1']
+        host = request.host.split(':')[0]
+        
+        if host not in allowed_domains:
+            print(f"非法域名访问: {host} from {request.remote_addr}")
+            return redirect('https://guwensuji.com' + request.path, code=301)
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+# API频率限制存储
+api_request_log = {}
+
+@app.before_request
+def security_middleware():
+    """统一的安全中间件 - 合并域名检查和API保护"""
+    
+    # 1. 域名检查（对所有请求生效）
+    allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1']
+    host = request.host.split(':')[0]
+    
+    if host not in allowed_domains:
+        print(f"非法域名访问: {host} from {request.remote_addr}")
+        return redirect('https://guwensuji.com' + request.path, code=301)
+    
+    # 2. API保护（只对API路由生效）
+    if request.path.startswith('/api/'):
+        # Referer检查
+        referer = request.headers.get('Referer', '')
+        api_allowed_domains = ['guwensuji.com', 'www.guwensuji.com']
+        
+        if referer and not any(domain in referer for domain in api_allowed_domains):
+            print(f"API非法访问: {request.path} from {referer}")
+            return jsonify({'success': False, 'message': 'Access denied'}), 403
+        
+        # 频率限制
+        client_ip = request.remote_addr
+        current_time = time.time()
+        
+        # 清理过期的请求记录
+        if client_ip in api_request_log:
+            api_request_log[client_ip] = [
+                req_time for req_time in api_request_log[client_ip] 
+                if current_time - req_time < 60
+            ]
+        
+        # 检查请求频率
+        request_times = api_request_log.get(client_ip, [])
+        if len(request_times) >= 30:
+            print(f"API频率限制: {client_ip} 在60秒内请求{len(request_times)}次")
+            return jsonify({
+                'success': False, 
+                'message': '请求过于频繁，请稍后再试'
+            }), 429
+        
+        # 记录本次请求
+        if client_ip not in api_request_log:
+            api_request_log[client_ip] = []
+        api_request_log[client_ip].append(current_time)
+        
+        # User-Agent检查
+        user_agent = request.headers.get('User-Agent', '')
+        if not user_agent or len(user_agent) < 10:
+            return jsonify({'success': False, 'message': 'Invalid request'}), 400
+
+# 删除原来的check_domain_middleware和api_protection_middleware函数
+
+@app.route('/robots.txt')
+def robots_txt():
+    """阻止爬虫访问敏感目录"""
+    return """User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /database/
+Allow: /$
+"""
+
+@app.route('/security/check')
+def security_check():
+    """安全状态检查端点"""
+    return jsonify({
+        'status': 'secure',
+        'domain': request.host,
+        'timestamp': time.time(),
+        'allowed': True
+    })
+# ============ 防盗功能结束 ============
+
+
 # 手动设置静态文件路由
 @app.route('/css/<path:filename>')
 def css_files(filename):
@@ -43,9 +139,26 @@ def css_files(filename):
 def js_files(filename):
     return send_from_directory(os.path.join(root_dir, 'js'), filename)
 
+# ============ 在这里添加图片防盗链 ============
 @app.route('/images/<path:filename>')
 def images_files(filename):
+    """图片资源路由，添加防盗链"""
+    referer = request.headers.get('Referer', '')
+    allowed_domains = [
+        'guwensuji.com', 
+        'www.guwensuji.com',
+        'guwensuji.com:8443',
+        'yzyl1114.github.io'
+    ]
+    
+    # 检查Referer，如果不是来自允许的域名，返回错误图片
+    if referer and not any(domain in referer for domain in allowed_domains):
+        print(f"图片盗链尝试: {filename} from {referer}")
+        # 返回一个错误图片或空白图片
+        return send_from_directory(os.path.join(root_dir, 'images'), 'blocked.png')
+    
     return send_from_directory(os.path.join(root_dir, 'images'), filename)
+# ============ 图片防盗链结束 ============
 
 # 初始化数据库
 init_db()
@@ -504,23 +617,3 @@ if __name__ == '__main__':
     else:
         # 开发环境
         app.run(debug=True, host='0.0.0.0', port=5001)
-
-#图片资源防盗链
-@app.route('/images/<path:filename>')
-def images_files(filename):
-    """图片资源路由，添加防盗链"""
-    referer = request.headers.get('Referer', '')
-    allowed_domains = [
-        'guwensuji.com', 
-        'www.guwensuji.com',
-        'guwensuji.com:8443',
-        'yzyl1114.github.io'
-    ]
-    
-    # 检查Referer，如果不是来自允许的域名，返回错误图片
-    if referer and not any(domain in referer for domain in allowed_domains):
-        print(f"图片盗链尝试: {filename} from {referer}")
-        # 返回一个错误图片或空白图片
-        return send_from_directory(os.path.join(root_dir, 'images'), 'blocked.png')
-    
-    return send_from_directory(os.path.join(root_dir, 'images'), filename)
