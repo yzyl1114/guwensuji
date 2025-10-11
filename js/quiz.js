@@ -779,13 +779,14 @@ document.addEventListener('DOMContentLoaded', function() {
         'guwensuji.com', 'www.guwensuji.com','guwensuji.com:8443','yzyl1114.github.io'
     ];
     const currentDomain = window.location.hostname + (window.location.port ? ':' + window.location.port : '');
-    
+    // 注释掉域名检查（解决重定向循环）
+    /*
     if (!allowedDomains.includes(currentDomain)) {
         console.error('非法域名访问:', currentDomain);
         window.location.href = 'https://guwensuji.com';
         return;
     }
-
+    */
        // 代码完整性检查
     const originalFunctions = {
         generateBasicQuestions: generateBasicQuestions.toString(),
