@@ -459,6 +459,7 @@ html { font-size: 16px; }
     padding: 8px 20px;
     text-align: center;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    display: none; /* 隐藏整个底部固定栏 */
 }
 .article-actions .cta-button {
     background: #1890ff;
