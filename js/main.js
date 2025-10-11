@@ -1,3 +1,5 @@
+localStorage.setItem('isPaidUser', 'true');
+/*
 // 设备指纹生成（简易版）
 function generateFingerprint() {
     const str = navigator.userAgent + navigator.language + screen.width + screen.height;
@@ -9,6 +11,7 @@ function generateFingerprint() {
     }
     return hash.toString();
 }
+*/
 
 // 模态框通用逻辑
 function setupModal(modalId, triggerBtnSel, closeBtnSel) {
@@ -180,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 新增：设置会员购买功能
 function setupMemberPurchase() {
+    return;
     console.log('设置会员购买功能');
     const purchaseLink = document.getElementById('purchaseMemberLink');
     console.log('购买链接元素:', purchaseLink);

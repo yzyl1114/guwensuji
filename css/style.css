@@ -587,6 +587,12 @@ html { font-size: 16px; }
     padding: 16px; /* 减少上下padding，因为内容多了 */
 }
 
+.nav-links,
+#customPaymentModal,
+.payment-modal {
+    display: none !important;
+}
+
 /* 支付方式样式 */
 .payment-method {
     display: flex;

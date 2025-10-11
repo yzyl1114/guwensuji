@@ -455,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 替换原来的 showPaymentModal 函数
     function showPaymentModal() {
         // 显示自定义弹窗
+        return;
         const customModal = document.getElementById('customPaymentModal');
         if (customModal) {
             customModal.style.display = 'flex';
