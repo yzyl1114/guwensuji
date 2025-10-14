@@ -55,31 +55,36 @@ api_request_log = {}
 
 @app.before_request
 def security_middleware():
-    """统一的安全中间件 - 合并域名检查和API保护"""
+    """统一的安全中间件"""
     
-    # 1. 域名检查（对所有请求生效）
-    allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1', '39.106.40.60']
+    # 1. 域名检查
+    allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1']
     host = request.host.split(':')[0]
     
-    # 如果是直接IP访问且是API请求，允许通过
-    if host in ['39.106.40.60', '172.25.8.113'] and request.path.startswith('/api/'):
-        # 允许直接IP访问API
-        pass
-    elif host not in allowed_domains:
+    if host not in allowed_domains:
         print(f"非法域名访问: {host} from {request.remote_addr}")
         return redirect('https://guwensuji.com' + request.path, code=301)
     
     # 2. API保护（只对API路由生效）
     if request.path.startswith('/api/'):
-        # 对于API请求，放宽Referer检查
-        referer = request.headers.get('Referer', '')
-        api_allowed_domains = ['guwensuji.com', 'www.guwensuji.com', '39.106.40.60']
+        # 对于支付回调相关的API，放宽限制
+        payment_paths = ['/api/payment/callback', '/api/payment/success']
         
-        if referer and not any(domain in referer for domain in api_allowed_domains):
-            print(f"API非法访问: {request.path} from {referer}")
-            return jsonify({'success': False, 'message': 'Access denied'}), 403
+        if request.path in payment_paths:
+            # 支付宝回调可能没有Referer，允许通过
+            print(f"支付回调请求: {request.path} from {request.remote_addr}")
+            # 不进行Referer检查
+            pass
+        else:
+            # 其他API请求保持原有保护
+            referer = request.headers.get('Referer', '')
+            api_allowed_domains = ['guwensuji.com', 'www.guwensuji.com']
+            
+            if referer and not any(domain in referer for domain in api_allowed_domains):
+                print(f"API非法访问: {request.path} from {referer}")
+                return jsonify({'success': False, 'message': 'Access denied'}), 403
         
-        # 频率限制
+        # 频率限制（对支付回调也适用，但可以放宽）
         client_ip = request.remote_addr
         current_time = time.time()
         
@@ -90,9 +95,9 @@ def security_middleware():
                 if current_time - req_time < 60
             ]
         
-        # 检查请求频率
+        # 检查请求频率（支付回调可以放宽限制）
         request_times = api_request_log.get(client_ip, [])
-        if len(request_times) >= 30:
+        if len(request_times) >= 100:  # 支付回调频率限制放宽
             print(f"API频率限制: {client_ip} 在60秒内请求{len(request_times)}次")
             return jsonify({
                 'success': False, 
@@ -108,8 +113,6 @@ def security_middleware():
         user_agent = request.headers.get('User-Agent', '')
         if not user_agent or len(user_agent) < 10:
             return jsonify({'success': False, 'message': 'Invalid request'}), 400
-
-# 删除原来的check_domain_middleware和api_protection_middleware函数
 
 @app.route('/robots.txt')
 def robots_txt():
@@ -206,31 +209,82 @@ def api_payment_success():
     out_trade_no = request.args.get('out_trade_no')
     trade_no = request.args.get('trade_no')
     total_amount = request.args.get('total_amount')
+    payment_from = request.args.get('from', 'nav')  # 获取支付来源
     
-    print(f"支付成功回调参数: out_trade_no={out_trade_no}, trade_no={trade_no}, total_amount={total_amount}")
+    print(f"支付成功回调参数: out_trade_no={out_trade_no}, trade_no={trade_no}, total_amount={total_amount}, from={payment_from}")
     
     # 检查签名确保回调的合法性（可选但推荐）
     # 这里可以添加签名验证逻辑
     
-    # 更新数据库订单状态为支付成功
+    license_key = None
+    expires_at = None
+    
+    # 更新数据库订单状态为支付成功并获取授权码
     if out_trade_no:
         try:
             conn = get_db_connection()
+            conn.row_factory = sqlite3.Row
+            
+            # 更新订单状态
             conn.execute(
                 'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
                 ('TRADE_SUCCESS', trade_no, out_trade_no)
             )
-            conn.commit()
+            
+            # 获取订单ID
+            order = conn.execute(
+                'SELECT id FROM orders WHERE out_trade_no = ?', (out_trade_no,)
+            ).fetchone()
+            
+            if order:
+                # 检查或生成授权码
+                license_data = conn.execute(
+                    'SELECT * FROM licenses WHERE order_id = ?', (order['id'],)
+                ).fetchone()
+                
+                if license_data:
+                    license_key = license_data['license_key']
+                    expires_at = license_data['expires_at']
+                else:
+                    # 生成新的授权码
+                    import random
+                    import string
+                    from datetime import datetime, timedelta
+                    
+                    chars = string.ascii_uppercase + string.digits
+                    license_key = '-'.join(
+                        [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
+                    )
+                    
+                    # 设置过期时间（一年后）
+                    expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
+                    
+                    # 保存授权码
+                    conn.execute(
+                        'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
+                        (license_key, order['id'], expires_at)
+                    )
+                
+                conn.commit()
+                print(f"订单 {out_trade_no} 处理完成，授权码: {license_key}")
+            else:
+                print(f"订单不存在: {out_trade_no}")
+            
             conn.close()
-            print(f"订单 {out_trade_no} 状态已更新为成功")
+            
         except Exception as e:
-            print(f"更新订单状态失败: {str(e)}")
+            print(f"处理支付成功回调失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     # 将参数传递给模板，以便显示
     return render_template('payment_success.html', 
                            out_trade_no=out_trade_no,
                            trade_no=trade_no,
-                           total_amount=total_amount)
+                           total_amount=total_amount,
+                           license_key=license_key,
+                           expires_at=expires_at,
+                           payment_from=payment_from)
 
 @app.route('/api/generate_license', methods=['POST'])
 def generate_license():
