@@ -52,6 +52,9 @@ class ProductionConfig(Config):
     ALIPAY_DEBUG = False
     ALIPAY_GATEWAY = "https://openapi.alipay.com/gateway.do"
     
+    # 允许通过IP访问（测试期间）
+    DOMAIN = os.environ.get('DOMAIN', 'http://39.106.40.60:5000')  # 临时使用IP
+
     # 生产环境域名（您的正式域名）
     DOMAIN = os.environ.get('DOMAIN', 'https://guwensuji.com')
     

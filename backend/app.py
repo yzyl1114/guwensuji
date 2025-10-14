@@ -58,18 +58,22 @@ def security_middleware():
     """统一的安全中间件 - 合并域名检查和API保护"""
     
     # 1. 域名检查（对所有请求生效）
-    allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1']
+    allowed_domains = ['guwensuji.com', 'www.guwensuji.com', 'yzyl1114.github.io', 'guwensuji.com:8443', 'localhost', '127.0.0.1', '39.106.40.60']
     host = request.host.split(':')[0]
     
-    if host not in allowed_domains:
+    # 如果是直接IP访问且是API请求，允许通过
+    if host in ['39.106.40.60', '172.25.8.113'] and request.path.startswith('/api/'):
+        # 允许直接IP访问API
+        pass
+    elif host not in allowed_domains:
         print(f"非法域名访问: {host} from {request.remote_addr}")
         return redirect('https://guwensuji.com' + request.path, code=301)
     
     # 2. API保护（只对API路由生效）
     if request.path.startswith('/api/'):
-        # Referer检查
+        # 对于API请求，放宽Referer检查
         referer = request.headers.get('Referer', '')
-        api_allowed_domains = ['guwensuji.com', 'www.guwensuji.com']
+        api_allowed_domains = ['guwensuji.com', 'www.guwensuji.com', '39.106.40.60']
         
         if referer and not any(domain in referer for domain in api_allowed_domains):
             print(f"API非法访问: {request.path} from {referer}")
