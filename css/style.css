@@ -459,7 +459,6 @@ html { font-size: 16px; }
     padding: 8px 20px;
     text-align: center;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    display: none; /* 隐藏整个底部固定栏 */
 }
 .article-actions .cta-button {
     background: #1890ff;
@@ -586,12 +585,6 @@ html { font-size: 16px; }
 
 .custom-modal-body {
     padding: 16px; /* 减少上下padding，因为内容多了 */
-}
-
-.nav-links,
-#customPaymentModal,
-.payment-modal {
-    display: none !important;
 }
 
 /* 支付方式样式 */

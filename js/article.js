@@ -497,8 +497,3 @@ function setupModal(modalId, openBtnId, closeBtnClass) {
         }
     }
 }
-
-const restoreLicenseLink = document.getElementById('restoreLicenseLink');
-if (restoreLicenseLink) {
-    restoreLicenseLink.style.display = 'none';
-}
