@@ -626,8 +626,10 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    # 根据环境选择运行配置
-    if current_config.ENV == 'production':
+    # 直接使用环境变量判断
+    env = os.environ.get('FLASK_ENV', 'development')
+    
+    if env == 'production':
         # 生产环境使用更安全的配置
         app.run(debug=False, host='0.0.0.0', port=5000)
     else:
