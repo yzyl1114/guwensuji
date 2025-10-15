@@ -758,6 +758,24 @@ html { font-size: 16px; }
     color: #333;
 }
 
+/* 确保模态框正确显示 */
+#agreementModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#agreementModal.modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
 /* 响应式设计 */
 @media (max-width: 480px) {
     .custom-modal-content {
