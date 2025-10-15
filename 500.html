@@ -4,38 +4,151 @@ cat > 500.html << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>服务器错误 - 古文速记</title>
+    <meta name="robots" content="noarchive, nosnippet, noimageindex">
+    <meta name="google" content="notranslate">
+    <!-- 安全策略 -->
+    <meta name="referrer" content="same-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">   
+    <!-- CSP内容安全策略 -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; img-src 'self' data: https:;script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;font-src 'self' https://fonts.gstatic.com;connect-src 'self'">
+    <title>服务器维护中 - 古文速记</title>
+    <meta name="description" content="服务器暂时遇到问题，请稍后重试。">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .error-container {
             text-align: center;
-            padding: 50px 20px;
-            max-width: 600px;
+            padding: 60px 20px;
+            max-width: 500px;
             margin: 0 auto;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .error-icon {
-            font-size: 4rem;
-            color: #dc3545;
-            margin-bottom: 20px;
+            font-size: 5rem;
+            color: #ffa502;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .error-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .error-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 35px;
+            line-height: 1.6;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4a6bff, #6d8aff);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 107, 255, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 107, 255, 0.4);
+        }
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        .help-text {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 40px 15px;
+            }
+            .error-icon {
+                font-size: 4rem;
+            }
+            .error-title {
+                font-size: 1.6rem;
+            }
+            .btn-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            .action-btn {
+                width: 100%;
+                max-width: 280px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 导航栏 -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="logo">古文速记</a>
         </div>
     </nav>
 
+    <!-- 错误内容区 -->
     <main class="error-container">
-        <div class="error-icon">⚠️</div>
-        <h1>服务器暂时遇到问题</h1>
-        <p>抱歉，服务器暂时无法处理您的请求，请稍后重试。</p>
-        <div class="btn-group" style="margin-top: 30px;">
-            <button onclick="window.location.href='/'" class="cta-button">返回首页</button>
-            <button onclick="history.back()" class="cta-button" style="background: #6c757d;">返回上一页</button>
+        <div class="error-icon">🔧</div>
+        <h1 class="error-title">服务器维护中</h1>
+        <div class="error-message">
+            抱歉，服务器暂时无法处理您的请求。<br>
+            我们的技术团队正在紧急修复中，请稍后重试。
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="window.location.href='/'" class="action-btn btn-primary">返回首页</button>
+            <button onclick="history.back()" class="action-btn btn-secondary">返回上一页</button>
+        </div>
+        
+        <div class="help-text">
+            给您带来不便，敬请谅解
         </div>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 页面加载动画
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
 </body>
 </html>
 EOF
