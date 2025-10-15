@@ -1,0 +1,42 @@
+cd /data/wwwroot/guwensuji
+cat > payment_error.html << 'EOF'
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付错误 - 古文速记</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .error-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">古文速记</a>
+        </div>
+    </nav>
+
+    <main class="error-container">
+        <div class="error-icon">❌</div>
+        <h1>支付处理遇到问题</h1>
+        <p id="error-message">{{ message }}</p>
+        <div class="btn-group" style="margin-top: 30px;">
+            <button onclick="history.back()" class="cta-button">返回重试</button>
+            <button onclick="window.location.href='/'" class="cta-button" style="background: #6c757d;">返回首页</button>
+        </div>
+    </main>
+</body>
+</html>
+EOF
