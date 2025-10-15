@@ -219,19 +219,75 @@ body {
 }
 
 /* 页脚样式 */
+/* 页脚样式 */
 .footer {
     text-align: center;
     padding: 1rem;
-    margin-top: 0.5rem;
+    margin-top: 2rem;
     color: #495057;
     border-top: 1px solid #e9ecef;
 }
-.footer a {
+
+/* 备案信息行 */
+.footer-beian {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.beian-link {
+    display: inline-flex;
+    align-items: center;
     color: #6c757d;
     text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
 }
-.footer a:hover {
+
+.beian-link:hover {
+    color: #007bff;
     text-decoration: underline;
+}
+
+.beian-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.beian-separator {
+    color: #dee2e6;
+    margin: 0 8px;
+}
+
+/* 联系方式行 */
+.footer-contact {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .footer-beian {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .beian-separator {
+        display: none; /* 移动端隐藏分隔线 */
+    }
+    
+    .beian-link {
+        font-size: 13px;
+    }
+    
+    .footer-contact {
+        font-size: 13px;
+    }
 }
 
 /* 首页适配移动端 */
@@ -950,3 +1006,4 @@ html { font-size: 16px; }
     -ms-user-select: text;
     user-select: text;
 }
+
