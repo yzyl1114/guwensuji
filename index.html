@@ -243,7 +243,7 @@
                         <img id="alipayLogo" src="images/alipaylogo.jpg" alt="支付宝">
                     </div>
                     <div class="payment-info">
-                        <div class="payment-name">支付宝</div><span style="background:#ff4d4f;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;margin-left:6px;">限时特惠</span>
+                        <div class="payment-name">支付宝</div><span style="background:#ff4d4f;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;margin-left:6px;">抢先体验价</span>
                     </div>
                     <div class="payment-selector selected" id="alipaySelector"></div>
                 </div>
@@ -252,7 +252,54 @@
                     <span class="price">¥1.0</span>
                     <span class="btn-text">立即购买</span>
                 </button>
+                <!-- 添加这行协议文案 -->
+                <div class="agreement-text">
+                    购买即代表同意<a href="javascript:void(0);" id="showAgreement">《会员服务协议》</a>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 添加协议内容模态框 -->
+    <div id="agreementModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>会员服务协议</h3>
+            <div class="agreement-content">
+                <p><strong>一、服务内容</strong></p>
+                <p>1. 购买后获得永久会员资格，享有全站古文测试功能</p>
+                <p>2. 可无限次使用所有篇章的填空测试功能</p>
+                <p>3. 支持题目刷新和完整测试体验</p>
+                
+                <p><strong>二、购买说明</strong></p>
+                <p>1. 本服务为虚拟数字商品，购买后不支持退款</p>
+                <p>2. 支付成功后系统将自动生成专属授权码</p>
+                <p>3. 请妥善保管授权码，它是恢复权限的唯一凭证</p>
+                
+                <p><strong>三、使用规则</strong></p>
+                <p>1. 授权码仅限购买者本人使用，禁止转让或出售</p>
+                <p>2. 不得利用本服务进行任何违法违规活动</p>
+                <p>3. 我们保留因不可抗力调整服务内容的权利</p>
+                
+                <p><strong>四、隐私保护</strong></p>
+                <p>1. 我们承诺保护用户隐私，不泄露个人信息</p>
+                <p>2. 支付信息由支付宝处理，我们不会存储敏感信息</p>
+                
+                <p><strong>五、其他条款</strong></p>
+                <p>1. 如有问题请联系客服处理</p>
+                <p>2. 本协议最终解释权归古文速记所有</p>
+            </div>
+            <button id="agreeBtn" style="
+                width: 100%;
+                padding: 12px;
+                background: #1890ff;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                cursor: pointer;
+                margin-top: 20px;
+            ">同意并关闭</button>
         </div>
     </div>
 

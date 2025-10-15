@@ -187,7 +187,53 @@ function setupMemberPurchase() {
     const customCloseBtn = document.getElementById('customClosePayment');
     const alipaySelector = document.getElementById('alipaySelector');
     const customAlipayBtn = document.getElementById('customAlipayBtn');
+    // 添加协议相关元素
+    const showAgreementLink = document.getElementById('showAgreement');
+    const agreementModal = document.getElementById('agreementModal');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const agreementCloseBtn = agreementModal ? agreementModal.querySelector('.close') : null;
 
+    // 协议链接点击事件
+    if (showAgreementLink) {
+        showAgreementLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('点击协议链接');
+            if (agreementModal) {
+                agreementModal.style.display = 'block';
+                agreementModal.classList.add('show');
+            }
+        });
+    }
+    // 同意按钮点击事件
+    if (agreeBtn) {
+        agreeBtn.addEventListener('click', function() {
+            console.log('点击同意按钮');
+            if (agreementModal) {
+                agreementModal.style.display = 'none';
+                agreementModal.classList.remove('show');
+            }
+        });
+    }
+    // 协议模态框关闭事件
+    if (agreementCloseBtn) {
+        agreementCloseBtn.addEventListener('click', function() {
+            console.log('点击关闭按钮');
+            if (agreementModal) {
+                agreementModal.style.display = 'none';
+                agreementModal.classList.remove('show');
+            }
+        });
+    }
+    // 点击协议模态框外部关闭
+    if (agreementModal) {
+        agreementModal.addEventListener('click', function(e) {
+            if (e.target === agreementModal) {
+                console.log('点击模态框外部');
+                agreementModal.style.display = 'none';
+                agreementModal.classList.remove('show');
+            }
+        });
+    }
     // 支付方式选择逻辑
     if (alipaySelector) {
         alipaySelector.addEventListener('click', function() {

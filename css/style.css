@@ -219,7 +219,6 @@ body {
 }
 
 /* 页脚样式 */
-/* 页脚样式 */
 .footer {
     text-align: center;
     padding: 1rem;
@@ -243,7 +242,7 @@ body {
     align-items: center;
     color: #6c757d;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 12px;
     transition: color 0.3s;
 }
 
@@ -777,61 +776,6 @@ html { font-size: 16px; }
     text-decoration: none;
 }
 
-/* 会员协议文案样式 */
-.agreement-text {
-    margin: 15px 0 0 0;
-    text-align: center;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-}
-
-.agreement-text a {
-    color: #1890ff;
-    text-decoration: none;
-}
-
-.agreement-text a:hover {
-    text-decoration: underline;
-}
-
-.agreement-content {
-    max-height: 400px;
-    overflow-y: auto;
-    text-align: left;
-    margin: 20px 0;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-}
-
-.agreement-content p {
-    margin: 10px 0;
-    line-height: 1.5;
-}
-
-.agreement-content strong {
-    color: #333;
-}
-
-/* 确保模态框正确显示 */
-#agreementModal.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-#agreementModal.modal.show {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-}
-
 /* 响应式设计 */
 @media (max-width: 480px) {
     .custom-modal-content {
@@ -1007,3 +951,57 @@ html { font-size: 16px; }
     user-select: text;
 }
 
+/* 会员协议文案样式 */
+.agreement-text {
+    margin: 15px 0 0 0;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.agreement-text a {
+    color: #1890ff;
+    text-decoration: none;
+}
+
+.agreement-text a:hover {
+    text-decoration: underline;
+}
+
+.agreement-content {
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.agreement-content p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.agreement-content strong {
+    color: #333;
+}
+
+/* 确保模态框正确显示 */
+#agreementModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#agreementModal.modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
