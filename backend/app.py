@@ -532,119 +532,99 @@ def create_order():
 
 @app.route('/api/payment/callback', methods=['POST'])
 def api_payment_callback():
-    """支付宝异步通知回调（加强版）"""
+    """支付宝异步通知回调（简化可靠版）"""
     try:
+        # 记录回调请求
         print(f"支付回调参数: {dict(request.form)}")
         
         # 验证签名
         data = request.form.to_dict()
         signature = data.pop("sign", None)
+        success = alipay.verify(data, signature)
         
-        # 严格的签名验证
-        if not alipay.verify(data, signature):
-            print("❌ 支付回调签名验证失败")
-            # 记录安全日志
-            log_security_event("alipay_signature_fail", request.remote_addr, data)
+        if not success:
+            print("支付回调签名验证失败")
             return 'failure', 400
             
-        # 关键业务参数验证
-        required_fields = ['out_trade_no', 'trade_status', 'trade_no', 'total_amount']
-        for field in required_fields:
-            if field not in data or not data[field]:
-                print(f"❌ 缺少必要参数: {field}")
-                return 'failure', 400
+        # 处理业务逻辑
+        out_trade_no = data.get('out_trade_no')
+        trade_status = data.get('trade_status')
+        trade_no = data.get('trade_no')
         
-        out_trade_no = data['out_trade_no']
-        trade_status = data['trade_status']
+        print(f"回调处理: out_trade_no={out_trade_no}, trade_status={trade_status}")
         
-        # 只处理成功的交易
         if trade_status != 'TRADE_SUCCESS':
-            print(f"⚠️ 交易未成功，状态: {trade_status}")
+            print(f"交易未成功，状态: {trade_status}")
             return 'success'
         
         # 获取数据库连接
         conn = get_db_connection()
-        conn.row_factory = sqlite3.Row
         
         try:
-            # 开始事务
-            conn.execute('BEGIN TRANSACTION')
-            
-            # 查询订单（加锁）
-            order = conn.execute(
-                'SELECT id, trade_status, total_amount FROM orders WHERE out_trade_no = ? FOR UPDATE',
+            # 检查订单是否已处理过
+            existing_order = conn.execute(
+                'SELECT id, trade_status FROM orders WHERE out_trade_no = ?',
                 (out_trade_no,)
             ).fetchone()
             
-            if not order:
-                print(f"❌ 订单不存在: {out_trade_no}")
-                conn.rollback()
+            if not existing_order:
+                print(f"订单不存在: {out_trade_no}")
+                conn.close()
                 return 'success'
             
-            # 防止重复处理
-            if order['trade_status'] == 'TRADE_SUCCESS':
-                print(f"✅ 订单已处理过: {out_trade_no}")
-                conn.rollback()
+            # 如果订单已经成功处理，直接返回成功
+            if existing_order['trade_status'] == 'TRADE_SUCCESS':
+                print(f"订单已处理过: {out_trade_no}")
+                conn.close()
                 return 'success'
-            
-            # 金额验证（防止金额篡改）
-            callback_amount = float(data['total_amount'])
-            order_amount = float(order['total_amount'])
-            
-            if abs(callback_amount - order_amount) > 0.01:  # 允许微小误差
-                print(f"❌ 金额不匹配: 订单{order_amount} != 回调{callback_amount}")
-                conn.rollback()
-                return 'failure', 400
             
             # 更新订单状态
             conn.execute(
-                '''UPDATE orders SET 
-                   trade_status = ?, 
-                   trade_no = ?,
-                   updated_at = CURRENT_TIMESTAMP,
-                   callback_received = 1
-                   WHERE out_trade_no = ?''',
-                ('TRADE_SUCCESS', data['trade_no'], out_trade_no)
+                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
+                ('TRADE_SUCCESS', trade_no, out_trade_no)
             )
             
-            print(f"✅ 订单 {out_trade_no} 状态已更新为成功")
+            print(f"订单 {out_trade_no} 状态已更新为成功")
             
-            # 生成或获取授权码
-            license_data = conn.execute(
-                'SELECT id FROM licenses WHERE order_id = ?', (order['id'],)
+            # 检查是否已存在授权码
+            existing_license = conn.execute(
+                'SELECT id FROM licenses WHERE order_id = ?',
+                (existing_order['id'],)
             ).fetchone()
             
-            if not license_data:
-                # 生成新授权码
-                license_key = generate_license_key()
+            if not existing_license:
+                # 生成授权码并关联到订单
+                import random
+                import string
+                from datetime import datetime, timedelta
+                
+                chars = string.ascii_uppercase + string.digits
+                license_key = '-'.join(
+                    [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
+                )
+                
                 expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
                 
                 conn.execute(
-                    'INSERT INTO licenses (license_key, order_id, expires_at, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
-                    (license_key, order['id'], expires_at)
+                    'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
+                    (license_key, existing_order['id'], expires_at)
                 )
-                print(f"✅ 为订单 {out_trade_no} 生成新授权码: {license_key}")
-            
-            # 记录支付验证日志
-            conn.execute(
-                '''INSERT INTO payment_verification_log 
-                   (order_id, verification_type, success, ip_address, created_at) 
-                   VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)''',
-                (order['id'], 'alipay_callback', 1, request.remote_addr)
-            )
+                print(f"为订单 {out_trade_no} 生成新授权码: {license_key}")
             
             conn.commit()
-            print(f"✅ 支付回调处理完成: {out_trade_no}")
+            conn.close()
             
+            print(f"支付回调处理完成: {out_trade_no}")
             return 'success'
             
-        except sqlite3.Error as e:
+        except Exception as e:
             conn.rollback()
-            print(f"❌ 数据库操作失败: {str(e)}")
+            conn.close()
+            print(f"数据库操作失败: {str(e)}")
             return 'success'
             
     except Exception as e:
-        print(f"❌ 处理支付回调异常: {str(e)}")
+        print(f"处理支付回调异常: {str(e)}")
         import traceback
         traceback.print_exc()
         return 'success'
