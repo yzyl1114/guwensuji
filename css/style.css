@@ -225,6 +225,7 @@ body {
     margin-top: 2rem;
     color: #495057;
     border-top: 1px solid #e9ecef;
+    font-size: 12px; /* 整体字号调小 */
 }
 
 /* 备案信息行 */
@@ -240,37 +241,45 @@ body {
 .beian-link {
     display: inline-flex;
     align-items: center;
-    color: #6c757d;
-    text-decoration: none;
+    color: #6c757d !important; /* 强制灰色，去掉蓝色 */
+    text-decoration: none !important; /* 去掉下划线 */
     font-size: 12px;
     transition: color 0.3s;
 }
 
 .beian-link:hover {
-    color: #007bff;
-    text-decoration: underline;
+    color: #495057 !important; /* 悬停时稍微深一点，但不是蓝色 */
+    text-decoration: none !important; /* 确保悬停时也没有下划线 */
 }
 
 .beian-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px; /* 调整图标大小 */
+    height: 14px; /* 调整图标大小 */
     margin-right: 4px;
     vertical-align: middle;
+    object-fit: contain; /* 确保图标比例正确 */
 }
 
 .beian-separator {
     color: #dee2e6;
     margin: 0 8px;
+    font-size: 12px;
 }
 
 /* 联系方式行 */
 .footer-contact {
     color: #6c757d;
-    font-size: 14px;
+    font-size: 12px; /* 调小字号 */
+    margin-top: 4px;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+    .footer {
+        padding: 0.8rem;
+        font-size: 11px; /* 移动端更小 */
+    }
+    
     .footer-beian {
         flex-direction: column;
         gap: 4px;
@@ -281,11 +290,16 @@ body {
     }
     
     .beian-link {
-        font-size: 13px;
+        font-size: 11px;
+    }
+    
+    .beian-icon {
+        width: 12px;
+        height: 12px;
     }
     
     .footer-contact {
-        font-size: 13px;
+        font-size: 11px;
     }
 }
 

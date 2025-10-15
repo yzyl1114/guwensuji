@@ -203,15 +203,16 @@
 
     <!-- 页脚 -->
     <footer class="footer">
-      <div class="beian">
-        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=11010502057586" target="_blank" rel="noreferrer">
-          <img src="images/beian.png" alt="公安联网备案图标"> 京公网安备11010502057586号
-        </a>
-        <a href="http://beian.miit.gov.cn/" target="_blank" rel="noreferrer">京ICP备2024094021号-2</a>
-      </div>
-      <div class="contact">
-        <span>商务合作 guwensuji@gmail.com</span>
-      </div>
+        <div class="footer-beian">
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=11010502057586" target="_blank" rel="noreferrer" class="beian-link">
+                <img src="images/beian.png" alt="公安联网备案图标" class="beian-icon"> 京公网安备11010502057586号
+            </a>
+            <span class="beian-separator">|</span>
+            <a href="http://beian.miit.gov.cn/" target="_blank" rel="noreferrer" class="beian-link">京ICP备2024094021号-2</a>
+        </div>
+        <div class="footer-contact">
+            <span>商务合作 guwensuji@gmail.com</span>
+        </div>
     </footer>
 
     <!-- 恢复权限弹窗 (暂时隐藏) -->
@@ -266,40 +267,36 @@
             <span class="close">&times;</span>
             <h3>会员服务协议</h3>
             <div class="agreement-content">
+                <p style="text-align: center; margin-bottom: 20px; color: #666;">
+                        本协议由<b>北京言之有理商贸店（个体工商户）</b>（以下简称"我们"）与用户（以下简称"您"）共同签订
+                </p>
                 <p><strong>一、服务内容</strong></p>
-                <p>1. 购买后获得永久会员资格，享有全站古文测试功能</p>
-                <p>2. 可无限次使用所有篇章的填空测试功能</p>
-                <p>3. 支持题目刷新和完整测试体验</p>
+                <p>1. 购买后您将获得永久会员资格，享有全站所有内容的永久使用权。</p>
+                <p>2. 可无限次使用所有篇章的填空测试功能，支持题目刷新和完整测试体验。</p>
+                <p>3. 会员服务为数字内容服务，不包含任何实物商品。</p>
                 
-                <p><strong>二、购买说明</strong></p>
-                <p>1. 本服务为虚拟数字商品，购买后不支持退款</p>
-                <p>2. 支付成功后系统将自动生成专属授权码</p>
-                <p>3. 请妥善保管授权码，它是恢复权限的唯一凭证</p>
+                <p><strong>二、使用规则</strong></p>
+                <p>1. 支付成功后系统将自动生成专属授权码，请妥善保管，该授权码是恢复权限的唯一凭证。</p>
+                <p>2. 授权码仅限购买者本人使用，禁止转让、出租、出售或以其他任何形式进行商业性使用。</p>
+                <p>3. 不得利用本服务进行任何违法违规活动，包括但不限于传播违法信息、侵犯他人知识产权等。</p>
                 
-                <p><strong>三、使用规则</strong></p>
-                <p>1. 授权码仅限购买者本人使用，禁止转让或出售</p>
-                <p>2. 不得利用本服务进行任何违法违规活动</p>
-                <p>3. 我们保留因不可抗力调整服务内容的权利</p>
+                <p><strong>三、购买说明</strong></p>
+                <p>1. 本服务为虚拟数字商品，一经购买成功，概不退款。</p>
+                <p>2. 如因系统故障、网络问题等非用户原因导致服务无法正常使用，请联系客服处理。</p>
+                <p>3. 如有会员及使用问题，请联系客服邮箱：guwensuji@gmail.com，我们将在1-15个工作日内为您处理。</p>
                 
                 <p><strong>四、隐私保护</strong></p>
-                <p>1. 我们承诺保护用户隐私，不泄露个人信息</p>
-                <p>2. 支付信息由支付宝处理，我们不会存储敏感信息</p>
+                <p>1. 我们承诺保护用户隐私，不会向第三方泄露您的个人信息。</p>
+                <p>2. 支付信息由支付宝等第三方支付平台处理，我们不会存储您的支付密码、银行卡号等敏感信息。</p>
+                <p>3. 为提供服务需要，我们仅收集必要的用户信息，并采取合理的安全保护措施。</p>
                 
                 <p><strong>五、其他条款</strong></p>
-                <p>1. 如有问题请联系客服处理</p>
-                <p>2. 本协议最终解释权归古文速记所有</p>
+                <p>1. 我们保留因不可抗力、技术升级、法律法规变化等原因调整服务内容的权利。</p>
+                <p>2. 如用户违反本协议条款，我们有权暂停或终止提供服务。</p>
+                <p>3. 本协议的最终解释权归<b>北京言之有理商贸店（个体工商户）</b>所有。</p>
+                <p>4. 本协议自您完成支付之日起生效。</p>
             </div>
-            <button id="agreeBtn" style="
-                width: 100%;
-                padding: 12px;
-                background: #1890ff;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                font-size: 16px;
-                cursor: pointer;
-                margin-top: 20px;
-            ">同意并关闭</button>
+            <button id="agreeBtn" style="width: 100%;padding: 12px;background: #1890ff;color: white;border: none;border-radius: 6px;font-size: 16px;cursor: pointer;margin-top: 20px;">同意并关闭</button>
         </div>
     </div>
 
