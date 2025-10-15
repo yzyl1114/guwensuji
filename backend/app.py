@@ -205,86 +205,81 @@ def quiz():
 
 @app.route('/api/payment/success')
 def api_payment_success():
-    # 从URL参数中获取支付宝返回的数据
+    """支付成功同步返回页面（加强验证）- 可直接替换版本"""
+    # 获取所有必要的URL参数
     out_trade_no = request.args.get('out_trade_no')
     trade_no = request.args.get('trade_no')
     total_amount = request.args.get('total_amount')
-    payment_from = request.args.get('from', 'nav')  # 获取支付来源
+    payment_from = request.args.get('from', 'nav')
     
-    print(f"支付成功回调参数: out_trade_no={out_trade_no}, trade_no={trade_no}, total_amount={total_amount}, from={payment_from}")
+    print(f"支付成功页面访问: out_trade_no={out_trade_no}, from={payment_from}")
     
-    # 检查签名确保回调的合法性（可选但推荐）
-    # 这里可以添加签名验证逻辑
+    if not out_trade_no:
+        return render_template('payment_error.html', message='缺少订单号')
     
-    license_key = None
-    expires_at = None
+    # 双重验证：检查数据库中的真实状态
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
     
-    # 更新数据库订单状态为支付成功并获取授权码
-    if out_trade_no:
-        try:
-            conn = get_db_connection()
-            conn.row_factory = sqlite3.Row
-            
-            # 更新订单状态
-            conn.execute(
-                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
-                ('TRADE_SUCCESS', trade_no, out_trade_no)
-            )
-            
-            # 获取订单ID
-            order = conn.execute(
-                'SELECT id FROM orders WHERE out_trade_no = ?', (out_trade_no,)
-            ).fetchone()
-            
-            if order:
-                # 检查或生成授权码
-                license_data = conn.execute(
-                    'SELECT * FROM licenses WHERE order_id = ?', (order['id'],)
-                ).fetchone()
-                
-                if license_data:
-                    license_key = license_data['license_key']
-                    expires_at = license_data['expires_at']
-                else:
-                    # 生成新的授权码
-                    import random
-                    import string
-                    from datetime import datetime, timedelta
-                    
-                    chars = string.ascii_uppercase + string.digits
-                    license_key = '-'.join(
-                        [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
-                    )
-                    
-                    # 设置过期时间（一年后）
-                    expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
-                    
-                    # 保存授权码
-                    conn.execute(
-                        'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
-                        (license_key, order['id'], expires_at)
-                    )
-                
-                conn.commit()
-                print(f"订单 {out_trade_no} 处理完成，授权码: {license_key}")
-            else:
-                print(f"订单不存在: {out_trade_no}")
-            
-            conn.close()
-            
-        except Exception as e:
-            print(f"处理支付成功回调失败: {str(e)}")
-            import traceback
-            traceback.print_exc()
-    
-    # 将参数传递给模板，以便显示
-    return render_template('payment_success.html', 
-                           out_trade_no=out_trade_no,
-                           trade_no=trade_no,
-                           total_amount=total_amount,
-                           license_key=license_key,
-                           expires_at=expires_at,
-                           payment_from=payment_from)
+    try:
+        # 查询订单信息
+        order = conn.execute('''
+            SELECT o.*, l.license_key, l.expires_at 
+            FROM orders o 
+            LEFT JOIN licenses l ON o.id = l.order_id 
+            WHERE o.out_trade_no = ? AND o.trade_status = 'TRADE_SUCCESS'
+        ''', (out_trade_no,)).fetchone()
+        
+        if not order:
+            print(f"❌ 订单不存在或未支付: {out_trade_no}")
+            # 返回错误页面，但保持原有参数传递
+            return render_template('payment_error.html', 
+                                 message='订单不存在或支付未完成',
+                                 out_trade_no=out_trade_no,
+                                 payment_from=payment_from)
+        
+        # 验证支付宝交易号匹配（如果提供了的话）
+        if trade_no and order['trade_no'] and order['trade_no'] != trade_no:
+            print(f"❌ 交易号不匹配: {trade_no} != {order['trade_no']}")
+            return render_template('payment_error.html', 
+                                 message='支付信息验证失败',
+                                 out_trade_no=out_trade_no,
+                                 payment_from=payment_from)
+        
+        # 记录页面访问日志
+        conn.execute(
+            '''INSERT INTO payment_verification_log 
+               (order_id, verification_type, success, ip_address, created_at) 
+               VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)''',
+            (order['id'], 'success_page', 1, request.remote_addr)
+        )
+        conn.commit()
+        
+        print(f"✅ 支付成功页面验证通过: {out_trade_no}")
+        
+        # 使用数据库中的真实数据，而不是URL参数
+        return render_template('payment_success.html', 
+                               out_trade_no=out_trade_no,
+                               trade_no=order['trade_no'] or trade_no,  # 优先使用数据库中的
+                               total_amount=order['total_amount'] or total_amount,
+                               license_key=order['license_key'],
+                               expires_at=order['expires_at'],
+                               payment_from=payment_from)  # 保持原有的payment_from
+                               
+    except Exception as e:
+        print(f"❌ 支付成功页面处理异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # 异常时仍然返回成功页面，但使用URL参数（降级方案）
+        return render_template('payment_success.html', 
+                               out_trade_no=out_trade_no,
+                               trade_no=trade_no,
+                               total_amount=total_amount,
+                               license_key=None,  # 授权码需要用户手动获取
+                               expires_at=None,
+                               payment_from=payment_from)
+    finally:
+        conn.close()
 
 @app.route('/api/generate_license', methods=['POST'])
 def generate_license():
@@ -537,111 +532,121 @@ def create_order():
 
 @app.route('/api/payment/callback', methods=['POST'])
 def api_payment_callback():
-    """支付宝异步通知回调（重要！）"""
+    """支付宝异步通知回调（加强版）"""
     try:
-        # 记录回调请求
         print(f"支付回调参数: {dict(request.form)}")
         
         # 验证签名
         data = request.form.to_dict()
         signature = data.pop("sign", None)
-        success = alipay.verify(data, signature)
         
-        if not success:
-            print("支付回调签名验证失败")
-            return 'failure', 400  # 签名验证失败
+        # 严格的签名验证
+        if not alipay.verify(data, signature):
+            print("❌ 支付回调签名验证失败")
+            # 记录安全日志
+            log_security_event("alipay_signature_fail", request.remote_addr, data)
+            return 'failure', 400
             
-        # 处理业务逻辑
-        out_trade_no = data.get('out_trade_no')
-        trade_status = data.get('trade_status')
-        trade_no = data.get('trade_no')
+        # 关键业务参数验证
+        required_fields = ['out_trade_no', 'trade_status', 'trade_no', 'total_amount']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                print(f"❌ 缺少必要参数: {field}")
+                return 'failure', 400
         
+        out_trade_no = data['out_trade_no']
+        trade_status = data['trade_status']
+        
+        # 只处理成功的交易
         if trade_status != 'TRADE_SUCCESS':
-            print(f"交易未成功，状态: {trade_status}")
-            return 'success'  # 非成功状态也返回success，避免支付宝重复通知
+            print(f"⚠️ 交易未成功，状态: {trade_status}")
+            return 'success'
         
         # 获取数据库连接
         conn = get_db_connection()
         conn.row_factory = sqlite3.Row
         
         try:
-            # 检查订单是否已处理过
-            existing_order = conn.execute(
-                'SELECT id, trade_status FROM orders WHERE out_trade_no = ?',
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            # 查询订单（加锁）
+            order = conn.execute(
+                'SELECT id, trade_status, total_amount FROM orders WHERE out_trade_no = ? FOR UPDATE',
                 (out_trade_no,)
             ).fetchone()
             
-            if not existing_order:
-                print(f"订单不存在: {out_trade_no}")
-                conn.close()
-                return 'success'  # 订单不存在也返回success
-            
-            # 如果订单已经成功处理，直接返回成功
-            if existing_order['trade_status'] == 'TRADE_SUCCESS':
-                print(f"订单已处理过: {out_trade_no}")
-                conn.close()
+            if not order:
+                print(f"❌ 订单不存在: {out_trade_no}")
+                conn.rollback()
                 return 'success'
+            
+            # 防止重复处理
+            if order['trade_status'] == 'TRADE_SUCCESS':
+                print(f"✅ 订单已处理过: {out_trade_no}")
+                conn.rollback()
+                return 'success'
+            
+            # 金额验证（防止金额篡改）
+            callback_amount = float(data['total_amount'])
+            order_amount = float(order['total_amount'])
+            
+            if abs(callback_amount - order_amount) > 0.01:  # 允许微小误差
+                print(f"❌ 金额不匹配: 订单{order_amount} != 回调{callback_amount}")
+                conn.rollback()
+                return 'failure', 400
             
             # 更新订单状态
             conn.execute(
-                'UPDATE orders SET trade_status = ?, trade_no = ? WHERE out_trade_no = ?',
-                ('TRADE_SUCCESS', trade_no, out_trade_no)
+                '''UPDATE orders SET 
+                   trade_status = ?, 
+                   trade_no = ?,
+                   updated_at = CURRENT_TIMESTAMP,
+                   callback_received = 1
+                   WHERE out_trade_no = ?''',
+                ('TRADE_SUCCESS', data['trade_no'], out_trade_no)
             )
             
-            print(f"订单 {out_trade_no} 状态已更新为成功")
+            print(f"✅ 订单 {out_trade_no} 状态已更新为成功")
             
-            # 检查是否已存在授权码
-            existing_license = conn.execute(
-                'SELECT id FROM licenses WHERE order_id = ?',
-                (existing_order['id'],)
+            # 生成或获取授权码
+            license_data = conn.execute(
+                'SELECT id FROM licenses WHERE order_id = ?', (order['id'],)
             ).fetchone()
             
-            if existing_license:
-                print(f"订单已有授权码，跳过生成: {out_trade_no}")
-                conn.commit()
-                conn.close()
-                return 'success'
+            if not license_data:
+                # 生成新授权码
+                license_key = generate_license_key()
+                expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
+                
+                conn.execute(
+                    'INSERT INTO licenses (license_key, order_id, expires_at, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
+                    (license_key, order['id'], expires_at)
+                )
+                print(f"✅ 为订单 {out_trade_no} 生成新授权码: {license_key}")
             
-            # 生成授权码并关联到订单
-            import random
-            import string
-            from datetime import datetime, timedelta
-            
-            # 生成更规范的授权码格式
-            chars = string.ascii_uppercase + string.digits
-            license_key = '-'.join(
-                [''.join(random.choice(chars) for _ in range(4)) for _ in range(3)]
-            )
-            
-            # 设置过期时间（一年后）
-            expires_at = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
-            
-            # 保存授权码到数据库，并关联订单ID
+            # 记录支付验证日志
             conn.execute(
-                'INSERT INTO licenses (license_key, order_id, expires_at) VALUES (?, ?, ?)',
-                (license_key, existing_order['id'], expires_at)
+                '''INSERT INTO payment_verification_log 
+                   (order_id, verification_type, success, ip_address, created_at) 
+                   VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)''',
+                (order['id'], 'alipay_callback', 1, request.remote_addr)
             )
-            
-            print(f"为订单 {out_trade_no} 生成新授权码: {license_key}")
             
             conn.commit()
-            conn.close()
+            print(f"✅ 支付回调处理完成: {out_trade_no}")
             
-            # 这里可以添加更多业务逻辑，如发送邮件、短信通知等
-            print(f"支付回调处理完成: {out_trade_no}")
-            
-            return 'success'  # 必须返回success，否则支付宝会重复通知
+            return 'success'
             
         except sqlite3.Error as e:
             conn.rollback()
-            conn.close()
-            print(f"数据库操作失败: {str(e)}")
-            # 即使数据库操作失败，也返回success，避免支付宝重复通知
+            print(f"❌ 数据库操作失败: {str(e)}")
             return 'success'
             
     except Exception as e:
-        print(f"处理支付回调异常: {str(e)}")
-        # 即使出现异常，也返回success，避免支付宝重复通知
+        print(f"❌ 处理支付回调异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return 'success'
 
 # 添加一个查询订单状态的接口（可选，用于前端轮询）

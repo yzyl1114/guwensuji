@@ -1,13 +1,13 @@
 import sqlite3
 import os
 from config import DATABASE
-
+    
 def init_db():
-    """初始化数据库"""
+    """初始化数据库（加强版）"""
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     
-    # 创建订单表 - 添加 payment_from 和 article_id 字段
+    # 创建订单表（添加验证字段）
     c.execute('''
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,9 +18,12 @@ def init_db():
             user_id INTEGER DEFAULT 0,
             create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            payment_from TEXT DEFAULT 'test',  -- 新增：支付来源 (test/nav)
-            article_id TEXT DEFAULT '1',       -- 新增：文章ID
-            device_type TEXT                   -- 新增：设备类型 (pc/mobile)
+            payment_from TEXT DEFAULT 'test',
+            article_id TEXT DEFAULT '1',
+            device_type TEXT,
+            callback_received BOOLEAN DEFAULT 0,  -- 新增：是否收到回调
+            verified BOOLEAN DEFAULT 0,           -- 新增：是否已验证
+            verification_count INTEGER DEFAULT 0  -- 新增：验证次数
         )
     ''')
     
@@ -34,14 +37,29 @@ def init_db():
             expires_at TIMESTAMP,
             is_active BOOLEAN DEFAULT 1,
             user_id INTEGER DEFAULT 0,
+            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+        )
+    ''')
+    
+    # 创建支付验证日志表（新增）
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS payment_verification_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            verification_type TEXT NOT NULL,  -- 'alipay_callback', 'success_page', 'manual_check'
+            success BOOLEAN NOT NULL,
+            ip_address TEXT,
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (order_id) REFERENCES orders(id)
         )
     ''')
     
-    # 添加索引（只保留必要的索引）
+    # 添加索引
     c.execute('CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no ON orders(out_trade_no)')
+    c.execute('CREATE INDEX IF NOT EXISTS idx_orders_trade_status ON orders(trade_status)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_licenses_order_id ON licenses(order_id)')
-    c.execute('CREATE INDEX IF NOT EXISTS idx_licenses_key ON licenses(license_key)')
+    c.execute('CREATE INDEX IF NOT EXISTS idx_verification_log_order_id ON payment_verification_log(order_id)')
     
     conn.commit()
     conn.close()
