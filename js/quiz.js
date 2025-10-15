@@ -38,11 +38,37 @@ document.addEventListener('DOMContentLoaded', function() {
     let allQuestions = [];
     let usedQuestionIndices = new Set();
     
-        // 添加自定义支付弹窗事件监听
+    // 添加自定义支付弹窗事件监听
     const customAlipayBtn = document.getElementById('customAlipayBtn');
     const customCloseBtn = document.getElementById('customClosePayment');
     const customModal = document.getElementById('customPaymentModal');
     const alipaySelector = document.getElementById('alipaySelector');
+    // 添加协议逻辑
+    const showAgreementLink = document.getElementById('showAgreement');
+    const agreementModal = document.getElementById('agreementModal');
+    const agreeBtn = document.getElementById('agreeBtn');
+
+    // 协议链接点击事件
+    if (showAgreementLink) {
+        showAgreementLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            agreementModal.style.display = 'block';
+        });
+    }
+    // 同意按钮点击事件
+    if (agreeBtn) {
+        agreeBtn.addEventListener('click', function() {
+            agreementModal.style.display = 'none';
+        });
+    }
+    // 协议模态框关闭事件
+    if (agreementModal) {
+        agreementModal.addEventListener('click', function(e) {
+            if (e.target === agreementModal || e.target.classList.contains('close')) {
+                agreementModal.style.display = 'none';
+            }
+        });
+    }
 
     // 支付方式选择逻辑
     if (alipaySelector) {
@@ -158,21 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化测试
     initQuiz();
-    
-    // 支付弹窗逻辑
-    /*
-    const startPaymentBtn = document.getElementById('startAlipayPayment');
-    if (startPaymentBtn) {
-        startPaymentBtn.addEventListener('click', showPaymentModal);
-    }
-    
-    const closePaymentBtn = document.getElementById('closePayment');
-    if (closePaymentBtn) {
-        closePaymentBtn.addEventListener('click', function() {
-            document.getElementById('paymentModal').style.display = 'none';
-        });
-    }
-    */
 
     // 初始化测试
     function initQuiz() {
